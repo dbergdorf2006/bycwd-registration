@@ -209,7 +209,7 @@ let adminAuthed = false, adminTab = "capacity";
 function render() {
   const app = document.getElementById("app");
   if      (view==="home")     app.innerHTML = renderHome();
-  else if (view==="register") app.innerHTML = renderRegister();
+  else if (view==="register") { app.innerHTML = renderRegister(); attachChildListeners(); }
   else if (view==="confirm")  app.innerHTML = renderConfirm();
   else if (view==="admin")    app.innerHTML = renderAdmin();
 }
@@ -248,10 +248,42 @@ function renderHome() {
 // ─── CHILD ROWS BUILDER ────────────────────────────────────────────────────
 function buildChildRows() {
   return children.map((c,i)=>`
-    <div class="child-row">
-      <input class="child-input" type="text" placeholder="Child ${i+1} name" value="${esc(c)}" oninput="children[${i}]=this.value;formErrors.children=null;" />
-      ${children.length>1?`<button class="btn-remove" onclick="removeChild(${i})">×</button>`:""}
+    <div class="child-row" data-index="${i}">
+      <input class="child-input" type="text" placeholder="Child ${i+1} name" value="${esc(c)}" data-index="${i}" />
+      ${children.length>1?`<button class="btn-remove" data-remove="${i}" type="button">x</button>`:""}
     </div>`).join("");
+}
+
+function attachChildListeners() {
+  const old = document.getElementById("child-rows");
+  if (!old) return;
+  const container = old.cloneNode(true);
+  old.parentNode.replaceChild(container, old);
+  container.addEventListener("input", e => {
+    if (e.target.classList.contains("child-input")) {
+      children[+e.target.dataset.index] = e.target.value;
+      formErrors.children = null;
+    }
+  });
+  container.addEventListener("click", e => {
+    const btn = e.target.closest("[data-remove]");
+    if (!btn) return;
+    e.preventDefault();
+    const idx = +btn.dataset.remove;
+    container.querySelectorAll(".child-input").forEach(inp => {
+      children[+inp.dataset.index] = inp.value;
+    });
+    children.splice(idx, 1);
+    formErrors.children = null;
+    container.innerHTML = buildChildRows();
+    attachChildListeners();
+    updateAddChildBtn();
+  });
+}
+
+function updateAddChildBtn() {
+  const btn = document.getElementById("add-child-btn");
+  if (btn) btn.style.display = children.length >= 8 ? "none" : "";
 }
 
 // ─── REGISTER ──────────────────────────────────────────────────────────────
@@ -476,39 +508,36 @@ function exitAdmin()  { adminAuthed=false; goHome(); }
 function setAdminTab(t) { adminTab=t; render(); if(t!=="setup") loadLiveData(); }
 
 function updateParent(v) { parentName=v; formErrors.parentName=null; }
-function updateChild(i,v) { children[i]=v; formErrors.children=null; }
 function addChild() {
   if (children.length < 8) {
-    // Snapshot current input values before re-render
-    syncChildInputs();
+    const container = document.getElementById("child-rows");
+    if (container) {
+      container.querySelectorAll(".child-input").forEach(inp => {
+        children[+inp.dataset.index] = inp.value;
+      });
+    }
     children.push("");
-    renderChildRows();
-    // Focus the new input
-    const inputs = document.querySelectorAll(".child-input");
-    if (inputs.length) inputs[inputs.length-1].focus();
+    const c2 = document.getElementById("child-rows");
+    if (c2) {
+      c2.innerHTML = buildChildRows();
+      attachChildListeners();
+      updateAddChildBtn();
+      const inputs = c2.querySelectorAll(".child-input");
+      if (inputs.length) inputs[inputs.length-1].focus();
+    }
   }
-}
-function removeChild(i) {
-  syncChildInputs();
-  children.splice(i, 1);
-  formErrors.children = null;
-  renderChildRows();
-}
-function syncChildInputs() {
-  document.querySelectorAll(".child-input").forEach((inp, idx) => {
-    children[idx] = inp.value;
-  });
-}
-function renderChildRows() {
-  const container = document.getElementById("child-rows");
-  if (!container) { render(); return; }
-  container.innerHTML = buildChildRows();
 }
 function selectActivity(bid,aid) { selectedActivities[bid]=aid; formErrors.activities=null; render(); }
 function clearBlock(bid) { delete selectedActivities[bid]; render(); }
 
 async function handleSubmit() {
-  syncChildInputs();
+  // Sync any typed-but-not-yet-stored child values
+  const childContainer = document.getElementById("child-rows");
+  if (childContainer) {
+    childContainer.querySelectorAll(".child-input").forEach(inp => {
+      children[+inp.dataset.index] = inp.value;
+    });
+  }
   formErrors = {};
   if (!parentName.trim()) formErrors.parentName = "Please enter your name.";
   if (children.some(c=>!c.trim())) formErrors.children = "Please fill in all children's names.";
