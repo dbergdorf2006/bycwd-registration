@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -245,17 +246,22 @@ function renderHome() {
     ${blocksHtml}`;
 }
 
+// ─── CHILD ROWS BUILDER ────────────────────────────────────────────────────
+function buildChildRows() {
+  return children.map((c,i)=>`
+    <div class="child-row">
+      <input class="child-input" type="text" placeholder="Child ${i+1} name" value="${esc(c)}" oninput="children[${i}]=this.value;formErrors.children=null;" />
+      ${children.length>1?`<button class="btn-remove" onclick="removeChild(${i})">×</button>`:""}
+    </div>`).join("");
+}
+
 // ─── REGISTER ──────────────────────────────────────────────────────────────
 function renderRegister() {
   const selBlocks = Object.keys(selectedActivities).filter(k=>selectedActivities[k]);
   const validKids = children.filter(c=>c.trim());
   const headcount = 1 + validKids.length;
 
-  const childRows = children.map((c,i)=>`
-    <div class="child-row">
-      <input type="text" placeholder="Child ${i+1} name" value="${esc(c)}" oninput="updateChild(${i},this.value)" />
-      ${children.length>1?`<button class="btn-remove" onclick="removeChild(${i})">×</button>`:""}
-    </div>`).join("");
+  const childRows = buildChildRows();
 
   const blocksHtml = TIME_BLOCKS.map(b=>{
     const isSel = !!selectedActivities[b.id];
@@ -297,9 +303,9 @@ function renderRegister() {
       </div>
       <div class="field" style="margin-bottom:0">
         <label>Children attending</label>
-        ${childRows}
+        <div id="child-rows">${childRows}</div>
         ${formErrors.children?`<p class="error">${formErrors.children}</p>`:""}
-        ${children.length<8?`<button class="btn-link" onclick="addChild()" style="margin-top:6px">+ Add another child</button>`:""}
+        ${children.length<8?`<button class="btn-link" id="add-child-btn" onclick="addChild()" style="margin-top:6px">+ Add another child</button>`:""}
       </div>
     </div>
     <div class="card">
@@ -472,12 +478,38 @@ function setAdminTab(t) { adminTab=t; render(); if(t!=="setup") loadLiveData(); 
 
 function updateParent(v) { parentName=v; formErrors.parentName=null; }
 function updateChild(i,v) { children[i]=v; formErrors.children=null; }
-function addChild()  { if(children.length<8){ children.push(""); render(); } }
-function removeChild(i) { children.splice(i,1); render(); }
+function addChild() {
+  if (children.length < 8) {
+    // Snapshot current input values before re-render
+    syncChildInputs();
+    children.push("");
+    renderChildRows();
+    // Focus the new input
+    const inputs = document.querySelectorAll(".child-input");
+    if (inputs.length) inputs[inputs.length-1].focus();
+  }
+}
+function removeChild(i) {
+  syncChildInputs();
+  children.splice(i, 1);
+  formErrors.children = null;
+  renderChildRows();
+}
+function syncChildInputs() {
+  document.querySelectorAll(".child-input").forEach((inp, idx) => {
+    children[idx] = inp.value;
+  });
+}
+function renderChildRows() {
+  const container = document.getElementById("child-rows");
+  if (!container) { render(); return; }
+  container.innerHTML = buildChildRows();
+}
 function selectActivity(bid,aid) { selectedActivities[bid]=aid; formErrors.activities=null; render(); }
 function clearBlock(bid) { delete selectedActivities[bid]; render(); }
 
 async function handleSubmit() {
+  syncChildInputs();
   formErrors = {};
   if (!parentName.trim()) formErrors.parentName = "Please enter your name.";
   if (children.some(c=>!c.trim())) formErrors.children = "Please fill in all children's names.";
