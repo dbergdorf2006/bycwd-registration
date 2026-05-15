@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bring Your Child to Work Day — Registration</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f4f0; color: #1a1a1a; min-height: 100vh; }
+
+    header { background: #fff; border-bottom: 1px solid #e5e4e0; padding: 14px 24px; display: flex; align-items: center; }
+    header h1 { font-size: 17px; font-weight: 600; flex: 1; }
+
+    main { max-width: 680px; margin: 0 auto; padding: 2rem 1rem 4rem; }
+
+    .card { background: #fff; border: 1px solid #e5e4e0; border-radius: 12px; padding: 20px 24px; margin-bottom: 16px; }
+    .card-title { font-size: 12px; font-weight: 600; color: #888; margin-bottom: 14px; text-transform: uppercase; letter-spacing: .06em; }
+
+    label { display: block; font-size: 14px; font-weight: 500; color: #444; margin-bottom: 6px; }
+    input[type="text"], input[type="password"] { width: 100%; padding: 10px 14px; border: 1px solid #ddd; border-radius: 8px; font-size: 15px; background: #fafafa; outline: none; transition: border-color .15s, box-shadow .15s; }
+    input:focus { border-color: #4a7cf7; background: #fff; box-shadow: 0 0 0 3px rgba(74,124,247,.12); }
+    .field { margin-bottom: 18px; }
+    .error { color: #d94040; font-size: 13px; margin-top: 5px; }
+
+    .btn { padding: 10px 22px; border-radius: 8px; font-size: 15px; font-weight: 500; cursor: pointer; border: 1px solid transparent; transition: all .15s; }
+    .btn-primary { background: #4a7cf7; color: #fff; border-color: #4a7cf7; }
+    .btn-primary:hover { background: #3a6ce7; }
+    .btn-primary:disabled { opacity: .5; cursor: default; }
+    .btn-outline { background: transparent; color: #444; border-color: #ddd; }
+    .btn-outline:hover { background: #f5f4f0; }
+    .btn-ghost { background: none; border: none; color: #888; font-size: 14px; cursor: pointer; padding: 0; }
+    .btn-ghost:hover { color: #333; }
+    .btn-link { background: none; border: none; color: #4a7cf7; font-size: 13px; cursor: pointer; padding: 0; }
+    .btn-full { width: 100%; padding: 13px; font-size: 16px; }
+
+    .child-row { display: flex; gap: 8px; margin-bottom: 8px; }
+    .child-row input { flex: 1; }
+    .btn-remove { background: none; border: 1px solid #ddd; border-radius: 8px; width: 38px; cursor: pointer; color: #d94040; font-size: 18px; flex-shrink: 0; }
+
+    .block-wrap { border: 1px solid #e5e4e0; border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; transition: border-color .15s, background .15s; }
+    .block-wrap.selected { border-color: #4a7cf7; background: #f0f5ff; }
+    .block-wrap.disabled { opacity: .4; pointer-events: none; }
+    .block-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .block-label { font-weight: 600; font-size: 14px; }
+    .block-time { font-size: 12px; color: #888; margin-left: 6px; }
+
+    .act-grid { display: grid; gap: 7px; }
+    .act-btn { display: flex; justify-content: space-between; align-items: center; padding: 9px 14px; border-radius: 8px; border: 1px solid #ddd; background: #fff; cursor: pointer; font-size: 14px; transition: all .12s; text-align: left; width: 100%; }
+    .act-btn:hover:not(:disabled) { border-color: #4a7cf7; background: #f8f9ff; }
+    .act-btn.chosen { border: 2px solid #4a7cf7; font-weight: 600; }
+    .act-btn:disabled { opacity: .45; cursor: default; }
+    .act-spots { font-size: 12px; color: #999; white-space: nowrap; margin-left: 10px; }
+    .act-spots.full { color: #d94040; }
+    .act-spots.low { color: #e07b00; }
+
+    .summary-box { background: #f0f5ff; border: 1px solid #c7d8fd; border-radius: 10px; padding: 14px 16px; margin-bottom: 20px; }
+    .summary-box p { font-size: 14px; margin-bottom: 4px; color: #333; }
+
+    .confirm-center { text-align: center; padding: 2rem 0; }
+    .confirm-card { background: #f5f4f0; border-radius: 12px; padding: 16px 20px; text-align: left; margin: 20px 0; }
+    .confirm-card p { font-size: 14px; color: #444; margin-bottom: 6px; }
+    .pill { display: inline-block; background: #e8effe; color: #3a5cb0; border-radius: 20px; padding: 3px 12px; font-size: 12px; font-weight: 500; margin: 3px 4px 3px 0; }
+
+    .prog-wrap { height: 6px; background: #eee; border-radius: 3px; margin-top: 4px; }
+    .prog-bar { height: 100%; border-radius: 3px; transition: width .3s; }
+
+    .reg-row { background: #fff; border: 1px solid #e5e4e0; border-radius: 10px; padding: 12px 16px; margin-bottom: 8px; }
+    .reg-name { font-weight: 600; font-size: 14px; margin-bottom: 3px; }
+    .reg-meta { font-size: 13px; color: #777; margin-bottom: 6px; }
+
+    .home-block { background: #fff; border: 1px solid #e5e4e0; border-radius: 10px; padding: 12px 16px; margin-bottom: 8px; }
+    .counter { display: inline-block; background: #e8effe; color: #3a5cb0; border-radius: 20px; padding: 2px 10px; font-size: 12px; font-weight: 600; margin: 2px 4px 2px 0; }
+    .counter.warn { background: #fff3e0; color: #e07b00; }
+    .counter.full { background: #fdeaea; color: #d94040; }
+
+    .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid #ddd; border-top-color: #4a7cf7; border-radius: 50%; animation: spin .7s linear infinite; vertical-align: middle; margin-right: 6px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .alert { border-radius: 10px; padding: 14px 18px; margin-bottom: 16px; font-size: 14px; }
+    .alert-warn { background: #fffbe6; border: 1px solid #f0d080; color: #7a5c00; }
+    .alert-err { background: #fff5f5; border: 1px solid #f5c5c5; color: #a03030; }
+    .alert-ok { background: #f0faf0; border: 1px solid #a0d8a0; color: #2a6a2a; }
+
+    .tab-bar { display: flex; gap: 4px; margin-bottom: 20px; background: #f0eee8; border-radius: 8px; padding: 4px; }
+    .tab { flex: 1; padding: 8px; border: none; background: none; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; color: #888; transition: all .15s; }
+    .tab.active { background: #fff; color: #1a1a1a; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+
+    .admin-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
+    .admin-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    .setup-steps { counter-reset: step; }
+    .setup-step { counter-increment: step; display: flex; gap: 14px; margin-bottom: 20px; }
+    .setup-step::before { content: counter(step); display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; min-width: 28px; background: #4a7cf7; color: #fff; border-radius: 50%; font-size: 13px; font-weight: 700; margin-top: 2px; }
+    .setup-step-body { flex: 1; }
+    .setup-step-body strong { display: block; font-size: 15px; margin-bottom: 4px; }
+    .setup-step-body p, .setup-step-body ul { font-size: 14px; color: #555; line-height: 1.7; }
+    .setup-step-body ul { padding-left: 18px; }
+    code { background: #f0eee8; border-radius: 4px; padding: 1px 6px; font-family: monospace; font-size: 13px; color: #333; }
+
+    .env-box { background: #1e1e2e; border-radius: 10px; padding: 16px 20px; margin: 12px 0; font-family: monospace; font-size: 13px; color: #cdd6f4; line-height: 2; }
+    .env-box span { color: #89b4fa; }
+  </style>
+</head>
+<body>
+<header>
+  <h1>🌟 Bring Your Child to Work Day</h1>
+  <button class="btn-ghost" onclick="goAdmin()" style="font-size:13px;color:#bbb">Admin</button>
+</header>
+<main id="app"></main>
+
+<script>
+// ─── ACTIVITY DATA ─────────────────────────────────────────────────────────
+// Edit these to match your actual schedule and capacities
+const TIME_BLOCKS = [
+  { id:"A", label:"Block A", time:"9:00 AM – 10:00 AM", activities:[
+    { id:"A1", name:"Science Experiments Lab", capacity:20 },
+    { id:"A2", name:"Coding for Kids", capacity:15 },
+    { id:"A3", name:"Art & Crafts Studio", capacity:25 },
+  ]},
+  { id:"B", label:"Block B", time:"10:15 AM – 11:15 AM", activities:[
+    { id:"B1", name:"Engineering Challenge", capacity:18 },
+    { id:"B2", name:"Storytelling Workshop", capacity:20 },
+    { id:"B3", name:"Cooking Basics", capacity:12 },
+  ]},
+  { id:"C", label:"Block C", time:"11:30 AM – 12:30 PM", activities:[
+    { id:"C1", name:"Music & Rhythm", capacity:20 },
+    { id:"C2", name:"Junior Finance", capacity:15 },
+    { id:"C3", name:"Photography Fun", capacity:16 },
+  ]},
+  { id:"D", label:"Block D", time:"1:30 PM – 2:30 PM", activities:[
+    { id:"D1", name:"Sports & Games", capacity:30 },
+    { id:"D2", name:"Drama & Theater", capacity:20 },
+    { id:"D3", name:"Robotics Intro", capacity:14 },
+  ]},
+  { id:"E", label:"Block E", time:"2:45 PM – 3:45 PM", activities:[
+    { id:"E1", name:"Nature & Gardening", capacity:22 },
+    { id:"E2", name:"Debate Club", capacity:18 },
+    { id:"E3", name:"Career Exploration", capacity:25 },
+  ]},
+];
+
+const ADMIN_PASSWORD = "admin2025";
+
+// ─── PROXY API (calls our Netlify function, not Airtable directly) ──────────
+async function proxyRequest(method, body, offset) {
+  const url = offset ? `/api/airtable?offset=${encodeURIComponent(offset)}` : "/api/airtable";
+  const res = await fetch(url, {
+    method,
+    headers: { "Content-Type": "application/json" },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data?.error?.message || data?.error || `Error ${res.status}`);
+  return data;
+}
+
+async function fetchAllRegistrations() {
+  let all = [], offset = null;
+  do {
+    const data = await proxyRequest("GET", null, offset);
+    all = all.concat(data.records || []);
+    offset = data.offset || null;
+  } while (offset);
+  return all;
+}
+
+async function submitRegistration(reg) {
+  return proxyRequest("POST", {
+    fields: {
+      "Parent Name": reg.parentName,
+      "Children": reg.children.join(", "),
+      "Number of Children": reg.children.length,
+      "Total Headcount": 1 + reg.children.length,
+      "Session 1": reg.sessions[0] || "",
+      "Session 2": reg.sessions[1] || "",
+      "Submitted At": new Date().toISOString(),
+    }
+  });
+}
+
+// ─── HELPERS ───────────────────────────────────────────────────────────────
+function getActivity(id) { return TIME_BLOCKS.flatMap(b=>b.activities).find(a=>a.id===id); }
+function getBlock(id) { return TIME_BLOCKS.find(b=>b.id===id); }
+function getBlockForActivity(aid) { return TIME_BLOCKS.find(b=>b.activities.some(a=>a.id===aid)); }
+function esc(s) {
+  return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+
+function computeEnrollment(records) {
+  const e = {};
+  TIME_BLOCKS.forEach(b=>b.activities.forEach(a=>e[a.id]=0));
+  records.forEach(r => {
+    const hc = Number(r.fields["Total Headcount"]) || 1;
+    ["Session 1","Session 2"].forEach(f => {
+      const s = r.fields[f] || "";
+      TIME_BLOCKS.forEach(b=>b.activities.forEach(a=>{ if(s.includes(a.name)) e[a.id]+=hc; }));
+    });
+  });
+  return e;
+}
+
+// ─── STATE ─────────────────────────────────────────────────────────────────
+let view = "home";
+let liveRecords = [], enrollment = {}, loadingData = false, loadError = null;
+let parentName = "", children = [""], selectedActivities = {}, formErrors = {}, submitting = false, submittedReg = null;
+let adminAuthed = false, adminTab = "capacity";
+
+// ─── RENDER ────────────────────────────────────────────────────────────────
+function render() {
+  const app = document.getElementById("app");
+  if      (view==="home")     app.innerHTML = renderHome();
+  else if (view==="register") app.innerHTML = renderRegister();
+  else if (view==="confirm")  app.innerHTML = renderConfirm();
+  else if (view==="admin")    app.innerHTML = renderAdmin();
+}
+
+// ─── HOME ──────────────────────────────────────────────────────────────────
+function renderHome() {
+  const blocksHtml = TIME_BLOCKS.map(b => {
+    const acts = b.activities.map(a => {
+      const filled = enrollment[a.id]||0;
+      const pct = Math.min(100,Math.round(filled/a.capacity*100));
+      const cls = pct>=100?"full":pct>=80?"warn":"";
+      return `<span class="counter ${cls}">${esc(a.name)}: ${filled}/${a.capacity}</span>`;
+    }).join("");
+    return `<div class="home-block">
+      <div style="font-weight:600;font-size:14px;margin-bottom:6px">${b.label} <span style="font-size:12px;color:#888;font-weight:400">${b.time}</span></div>
+      <div>${acts}</div>
+    </div>`;
+  }).join("");
+
+  const status = loadingData
+    ? `<p style="font-size:13px;color:#aaa;margin-bottom:12px"><span class="spinner"></span>Loading availability…</p>`
+    : loadError
+    ? `<div class="alert alert-err" style="margin-bottom:12px">⚠️ Could not load live data: ${esc(loadError)}</div>`
+    : `<p style="font-size:13px;color:#aaa;margin-bottom:12px">${liveRecords.length} parent${liveRecords.length!==1?"s":""} registered so far</p>`;
+
+  return `<div style="text-align:center;padding:2rem 0 1.5rem">
+      <div style="font-size:48px;margin-bottom:12px">🌟</div>
+      <h2 style="font-size:26px;font-weight:700;margin-bottom:8px">Bring Your Child to Work Day</h2>
+      <p style="color:#666;font-size:15px;margin-bottom:24px">Register yourself and your children.<br>Choose <strong>2 activity sessions</strong> from 5 time blocks.</p>
+      <button class="btn btn-primary" style="font-size:16px;padding:12px 36px" onclick="goRegister()">Register Now</button>
+    </div>
+    ${status}
+    ${blocksHtml}`;
+}
+
+// ─── REGISTER ──────────────────────────────────────────────────────────────
+function renderRegister() {
+  const selBlocks = Object.keys(selectedActivities).filter(k=>selectedActivities[k]);
+  const validKids = children.filter(c=>c.trim());
+  const headcount = 1 + validKids.length;
+
+  const childRows = children.map((c,i)=>`
+    <div class="child-row">
+      <input type="text" placeholder="Child ${i+1} name" value="${esc(c)}" oninput="updateChild(${i},this.value)" />
+      ${children.length>1?`<button class="btn-remove" onclick="removeChild(${i})">×</button>`:""}
+    </div>`).join("");
+
+  const blocksHtml = TIME_BLOCKS.map(b=>{
+    const isSel = !!selectedActivities[b.id];
+    const isDisabled = !isSel && selBlocks.length>=2;
+    const acts = b.activities.map(a=>{
+      const filled=enrollment[a.id]||0, remaining=a.capacity-filled;
+      const isFull=remaining<=0, noRoom=remaining>0&&remaining<headcount;
+      const isChosen=selectedActivities[b.id]===a.id;
+      const dis=(isFull||(noRoom&&!isChosen))?"disabled":"";
+      const sc=isFull?"full":noRoom?"low":"";
+      const st=isFull?"Full":noRoom?`Only ${remaining} spot${remaining!==1?"s":""}`:remaining>=a.capacity?`${a.capacity} spots`:`${remaining} spots`;
+      return `<button class="act-btn ${isChosen?"chosen":""}" ${dis} onclick="selectActivity('${b.id}','${a.id}')">
+        <span>${esc(a.name)}</span><span class="act-spots ${sc}">${st}</span>
+      </button>`;
+    }).join("");
+    const clr=isSel?`<button class="btn-link" onclick="clearBlock('${b.id}')">Clear</button>`:"";
+    return `<div class="block-wrap ${isSel?"selected":""} ${isDisabled?"disabled":""}">
+      <div class="block-header"><div><span class="block-label">${b.label}</span><span class="block-time">${b.time}</span></div>${clr}</div>
+      <div class="act-grid">${acts}</div>
+    </div>`;
+  }).join("");
+
+  const summary = selBlocks.length>0?`<div class="summary-box">
+    <p style="font-weight:600;margin-bottom:8px">Your selections (${selBlocks.length}/2)</p>
+    ${selBlocks.map(bid=>{const a=getActivity(selectedActivities[bid]),b=getBlock(bid);
+      return `<p>✓ <strong>${b.label}</strong> (${b.time}): ${esc(a?.name)}</p>`;}).join("")}
+  </div>`:"";
+
+  const btnLabel = submitting?`<span class="spinner"></span>Submitting…`:"Complete Registration →";
+
+  return `<div style="margin-bottom:20px"><button class="btn-ghost" onclick="goHome()">← Back</button></div>
+    <h2 style="font-size:22px;font-weight:700;margin-bottom:24px">Register</h2>
+    <div class="card">
+      <div class="card-title">Your info</div>
+      <div class="field">
+        <label>Your full name</label>
+        <input type="text" placeholder="Jane Smith" value="${esc(parentName)}" oninput="updateParent(this.value)" />
+        ${formErrors.parentName?`<p class="error">${formErrors.parentName}</p>`:""}
+      </div>
+      <div class="field" style="margin-bottom:0">
+        <label>Children attending</label>
+        ${childRows}
+        ${formErrors.children?`<p class="error">${formErrors.children}</p>`:""}
+        ${children.length<8?`<button class="btn-link" onclick="addChild()" style="margin-top:6px">+ Add another child</button>`:""}
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Choose 2 time blocks</div>
+      <p style="font-size:13px;color:#888;margin-bottom:14px">You + ${validKids.length} child${validKids.length!==1?"ren":""} = <strong>${headcount} spot${headcount!==1?"s":""}</strong> per activity.</p>
+      ${blocksHtml}
+      ${formErrors.activities?`<p class="error">${formErrors.activities}</p>`:""}
+    </div>
+    ${summary}
+    ${formErrors.submit?`<p class="error" style="margin-bottom:10px">${formErrors.submit}</p>`:""}
+    <button class="btn btn-primary btn-full" onclick="handleSubmit()" ${submitting?"disabled":""}>${btnLabel}</button>`;
+}
+
+// ─── CONFIRM ───────────────────────────────────────────────────────────────
+function renderConfirm() {
+  const r = submittedReg;
+  const pills = r.sessions.map(s=>`<span class="pill">${esc(s)}</span>`).join("");
+  return `<div class="confirm-center">
+    <div style="font-size:52px;margin-bottom:16px">🎉</div>
+    <h2 style="font-size:24px;font-weight:700;margin-bottom:8px">You're registered!</h2>
+    <p style="color:#666;font-size:15px;margin-bottom:4px">See you at Bring Your Child to Work Day,</p>
+    <p style="font-size:18px;font-weight:600;margin-bottom:20px">${esc(r.parentName)}</p>
+    <div class="confirm-card">
+      <p><strong>Parent:</strong> ${esc(r.parentName)}</p>
+      <p><strong>Children:</strong> ${r.children.map(esc).join(", ")||"—"}</p>
+      <p style="margin-top:10px"><strong>Sessions booked:</strong></p>
+      <div style="margin-top:6px">${pills}</div>
+    </div>
+    <p style="font-size:13px;color:#aaa;margin-bottom:20px">Screenshot this page as your confirmation.</p>
+    <button class="btn btn-outline" onclick="resetForm()">Register another parent</button>
+  </div>`;
+}
+
+// ─── ADMIN ─────────────────────────────────────────────────────────────────
+function renderAdmin() {
+  if (!adminAuthed) {
+    return `<div style="margin-bottom:20px"><button class="btn-ghost" onclick="goHome()">← Back</button></div>
+      <h2 style="font-size:22px;font-weight:700;margin-bottom:24px">Admin access</h2>
+      <div class="card" style="max-width:360px">
+        <div class="field">
+          <label>Password</label>
+          <input type="password" id="admin-pw" placeholder="Enter password" onkeydown="if(event.key==='Enter')tryAdminLogin()" />
+          ${formErrors.adminPw?`<p class="error">${formErrors.adminPw}</p>`:""}
+        </div>
+        <button class="btn btn-primary" onclick="tryAdminLogin()">Log in</button>
+        <p style="font-size:12px;color:#aaa;margin-top:12px">Default: admin2025</p>
+      </div>`;
+  }
+
+  const tabs = `<div class="tab-bar">
+    <button class="tab ${adminTab==="capacity"?"active":""}" onclick="setAdminTab('capacity')">Capacity</button>
+    <button class="tab ${adminTab==="registrations"?"active":""}" onclick="setAdminTab('registrations')">Registrations (${liveRecords.length})</button>
+    <button class="tab ${adminTab==="setup"?"active":""}" onclick="setAdminTab('setup')">⚙ Setup guide</button>
+  </div>`;
+
+  let content = "";
+  if (adminTab==="setup") content = renderSetupTab();
+  else if (loadingData) content = `<p><span class="spinner"></span>Loading…</p>`;
+  else if (loadError) content = `<div class="alert alert-err">⚠️ ${esc(loadError)}<br><small>Check that your Netlify environment variables are set correctly (see Setup guide tab).</small></div>`;
+  else if (adminTab==="capacity") content = renderCapacityTab();
+  else if (adminTab==="registrations") content = renderRegistrationsTab();
+
+  return `<div class="admin-header">
+      <div>
+        <button class="btn-ghost" onclick="exitAdmin()" style="margin-bottom:6px">← Exit</button>
+        <h2 style="font-size:22px;font-weight:700">Admin dashboard</h2>
+      </div>
+      <div class="admin-actions">
+        <button class="btn btn-outline" onclick="refreshData()">↻ Refresh</button>
+        ${liveRecords.length>0?`<button class="btn btn-outline" onclick="exportCSV()">Export CSV</button>`:""}
+      </div>
+    </div>
+    ${tabs}${content}`;
+}
+
+function renderCapacityTab() {
+  if (!liveRecords.length && !loadError) return `<p style="color:#aaa;font-size:14px">No registrations yet — capacity is fully available.</p>`;
+  return TIME_BLOCKS.map(b=>{
+    const acts = b.activities.map(a=>{
+      const filled=enrollment[a.id]||0;
+      const pct=Math.min(100,Math.round(filled/a.capacity*100));
+      const color=pct>=100?"#d94040":pct>=80?"#e07b00":"#4a7cf7";
+      return `<div style="margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;font-size:13px;color:#555;margin-bottom:3px">
+          <span>${esc(a.name)}</span><span style="font-weight:600">${filled}/${a.capacity}</span>
+        </div>
+        <div class="prog-wrap"><div class="prog-bar" style="width:${pct}%;background:${color}"></div></div>
+      </div>`;
+    }).join("");
+    return `<div class="card"><div class="card-title">${b.label} — ${b.time}</div>${acts}</div>`;
+  }).join("");
+}
+
+function renderRegistrationsTab() {
+  if (!liveRecords.length) return `<p style="color:#aaa;font-size:14px">No registrations yet.</p>`;
+  return liveRecords.slice().reverse().map(r=>{
+    const f=r.fields;
+    const s1=f["Session 1"]?`<span class="pill">${esc(f["Session 1"])}</span>`:"";
+    const s2=f["Session 2"]?`<span class="pill">${esc(f["Session 2"])}</span>`:"";
+    const date=f["Submitted At"]?new Date(f["Submitted At"]).toLocaleDateString():"";
+    return `<div class="reg-row">
+      <div class="reg-name">${esc(f["Parent Name"]||"")}</div>
+      <div class="reg-meta">Children: ${esc(f["Children"]||"—")} · Headcount: ${f["Total Headcount"]||1} · ${date}</div>
+      <div>${s1}${s2}</div>
+    </div>`;
+  }).join("");
+}
+
+function renderSetupTab() {
+  return `<div class="card">
+    <div class="card-title">How to connect Airtable (one-time setup)</div>
+    <div class="setup-steps">
+
+      <div class="setup-step"><div class="setup-step-body">
+        <strong>Create a free Airtable account</strong>
+        <p>Go to <a href="https://airtable.com" target="_blank" style="color:#4a7cf7">airtable.com</a> and sign up. No credit card needed.</p>
+      </div></div>
+
+      <div class="setup-step"><div class="setup-step-body">
+        <strong>Create a Base and set up the table</strong>
+        <p>Click "Create a base" → name it anything (e.g. "BYCWD 2025"). Rename the default table to exactly <code>Registrations</code>. Add these columns:</p>
+        <ul>
+          <li><code>Parent Name</code> — Single line text</li>
+          <li><code>Children</code> — Long text</li>
+          <li><code>Number of Children</code> — Number</li>
+          <li><code>Total Headcount</code> — Number</li>
+          <li><code>Session 1</code> — Single line text</li>
+          <li><code>Session 2</code> — Single line text</li>
+          <li><code>Submitted At</code> — Single line text</li>
+        </ul>
+      </div></div>
+
+      <div class="setup-step"><div class="setup-step-body">
+        <strong>Get your Personal Access Token</strong>
+        <p>Go to <a href="https://airtable.com/create/tokens" target="_blank" style="color:#4a7cf7">airtable.com/create/tokens</a> → Create token → give it <code>data.records:read</code> and <code>data.records:write</code> scopes → select your base → copy the token.</p>
+      </div></div>
+
+      <div class="setup-step"><div class="setup-step-body">
+        <strong>Get your Base ID</strong>
+        <p>Open your base in Airtable. Your Base ID is in the URL:<br>
+        <code>airtable.com/<strong style="color:#4a7cf7">appXXXXXXXXXXXXXX</strong>/tbl…</code></p>
+      </div></div>
+
+      <div class="setup-step"><div class="setup-step-body">
+        <strong>Add environment variables in Netlify</strong>
+        <p>In your Netlify dashboard → Site → <strong>Site configuration → Environment variables</strong> → Add these three:</p>
+        <div class="env-box">
+          <span>AIRTABLE_API_KEY</span> = pat…your token…<br>
+          <span>AIRTABLE_BASE_ID</span> = appXXXXXXXXXXXXXX<br>
+          <span>AIRTABLE_TABLE_NAME</span> = Registrations
+        </div>
+        <p>After saving, go to <strong>Deploys → Trigger deploy → Deploy site</strong> to apply them.</p>
+      </div></div>
+
+      <div class="setup-step"><div class="setup-step-body">
+        <strong>Done! Click Refresh to verify</strong>
+        <p>Switch to the Capacity or Registrations tab and click ↻ Refresh. If it loads without errors, you're connected.</p>
+      </div></div>
+
+    </div>
+  </div>`;
+}
+
+// ─── ACTIONS ───────────────────────────────────────────────────────────────
+function goHome()     { view="home";     render(); loadLiveData(); }
+function goRegister() { view="register"; render(); }
+function goAdmin()    { view="admin";    render(); if(adminAuthed) loadLiveData(); }
+function exitAdmin()  { adminAuthed=false; goHome(); }
+function setAdminTab(t) { adminTab=t; render(); if(t!=="setup") loadLiveData(); }
+
+function updateParent(v) { parentName=v; formErrors.parentName=null; }
+function updateChild(i,v) { children[i]=v; formErrors.children=null; }
+function addChild()  { if(children.length<8){ children.push(""); render(); } }
+function removeChild(i) { children.splice(i,1); render(); }
+function selectActivity(bid,aid) { selectedActivities[bid]=aid; formErrors.activities=null; render(); }
+function clearBlock(bid) { delete selectedActivities[bid]; render(); }
+
+async function handleSubmit() {
+  formErrors = {};
+  if (!parentName.trim()) formErrors.parentName = "Please enter your name.";
+  if (children.some(c=>!c.trim())) formErrors.children = "Please fill in all children's names.";
+  const selBlocks = Object.keys(selectedActivities).filter(k=>selectedActivities[k]);
+  if (selBlocks.length!==2) formErrors.activities = "Please select exactly 2 time blocks.";
+  if (Object.keys(formErrors).length) { render(); return; }
+
+  const headcount = 1 + children.filter(c=>c.trim()).length;
+  const actIds = Object.values(selectedActivities).filter(Boolean);
+  const capFail = actIds.find(aid=>{ const a=getActivity(aid); return a&&(enrollment[aid]||0)+headcount>a.capacity; });
+  if (capFail) { formErrors.activities="One or more activities is now full. Please choose different sessions."; render(); return; }
+
+  const sessions = actIds.map(aid=>{
+    const a=getActivity(aid), b=getBlockForActivity(aid);
+    return `${b?.label} (${b?.time}): ${a?.name}`;
+  });
+
+  submitting=true; render();
+  try {
+    await submitRegistration({ parentName:parentName.trim(), children:children.map(c=>c.trim()).filter(Boolean), sessions });
+    submittedReg = { parentName:parentName.trim(), children:children.map(c=>c.trim()).filter(Boolean), sessions };
+    actIds.forEach(aid=>{ enrollment[aid]=(enrollment[aid]||0)+headcount; });
+    view="confirm";
+  } catch(err) {
+    formErrors.submit = `Submission failed: ${err.message}. Please try again or contact the organiser.`;
+  }
+  submitting=false; render();
+}
+
+function resetForm() {
+  parentName=""; children=[""]; selectedActivities={}; formErrors={}; submittedReg=null;
+  view="home"; render(); loadLiveData();
+}
+
+function tryAdminLogin() {
+  const pw = document.getElementById("admin-pw")?.value||"";
+  if (pw===ADMIN_PASSWORD) { adminAuthed=true; formErrors={}; render(); loadLiveData(); }
+  else { formErrors.adminPw="Incorrect password."; render(); }
+}
+
+async function loadLiveData() {
+  loadingData=true; loadError=null; render();
+  try {
+    liveRecords = await fetchAllRegistrations();
+    enrollment = computeEnrollment(liveRecords);
+  } catch(err) {
+    loadError = err.message;
+  }
+  loadingData=false; render();
+}
+
+async function refreshData() { await loadLiveData(); }
+
+function exportCSV() {
+  const rows=[["Parent Name","Children","Number of Children","Total Headcount","Session 1","Session 2","Submitted At"]];
+  liveRecords.forEach(r=>{
+    const f=r.fields;
+    rows.push([f["Parent Name"]||"",f["Children"]||"",f["Number of Children"]||"",f["Total Headcount"]||"",f["Session 1"]||"",f["Session 2"]||"",f["Submitted At"]||""]);
+  });
+  const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(",")).join("\n");
+  const blob=new Blob([csv],{type:"text/csv"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a"); a.href=url; a.download="bycwd_registrations.csv"; a.click();
+  URL.revokeObjectURL(url);
+}
+
+render();
+loadLiveData();
+</script>
+</body>
+</html>
