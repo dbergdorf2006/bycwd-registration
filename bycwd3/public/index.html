@@ -248,7 +248,7 @@ let view = "home";
 let liveRecords = [], enrollment = {}, loadingData = false, loadError = null;
 
 // Form state
-let associateName = "", email = "", clockNumber = "", title = "", location = "", manager = "";
+let associateName = "", email = "", clockNumber = "", title = "", workLocation = "", manager = "";
 let children = [""], childAges = [""];
 let selectedActivities = {}, formErrors = {}, submitting = false, submittedReg = null;
 let getInvolved = "", consentAccepted = false;
@@ -258,11 +258,19 @@ let adminAuthed = false, adminTab = "capacity";
 
 // ─── RENDER ─────────────────────────────────────────────────────────────────
 function render() {
-  const app = document.getElementById("app");
-  if      (view==="home")     app.innerHTML = renderHome();
-  else if (view==="register") { app.innerHTML = renderRegister(); attachChildListeners(); }
-  else if (view==="confirm")  app.innerHTML = renderConfirm();
-  else if (view==="admin")    app.innerHTML = renderAdmin();
+  try {
+    const app = document.getElementById("app");
+    if      (view==="home")     app.innerHTML = renderHome();
+    else if (view==="register") { app.innerHTML = renderRegister(); attachChildListeners(); }
+    else if (view==="confirm")  app.innerHTML = renderConfirm();
+    else if (view==="admin")    app.innerHTML = renderAdmin();
+  } catch(err) {
+    const app = document.getElementById("app");
+    if (app) app.innerHTML = `<div style="padding:2rem;color:#d94040;font-family:monospace;font-size:13px">
+      <strong>Render error:</strong> ${err.message}<br><pre>${err.stack}</pre>
+      <button onclick="view='home';render()" style="margin-top:12px;padding:8px 16px;cursor:pointer">Go Home</button>
+    </div>`;
+  }
 }
 
 // ─── HOME ───────────────────────────────────────────────────────────────────
@@ -422,7 +430,7 @@ function renderRegister() {
       <div class="two-col">
         <div class="field">
           <label>Location <span class="req">*</span></label>
-          <input type="text" placeholder="e.g. Kohler, WI" value="${esc(location)}" oninput="location=this.value;formErrors.location=null" class="${fe.location?"has-error":""}" />
+          <input type="text" placeholder="e.g. Kohler, WI" value="${esc(workLocation)}" oninput="workLocation=this.value;formErrors.location=null" class="${fe.location?"has-error":""}" />
           ${fe.location?`<p class="error">${fe.location}</p>`:""}
         </div>
         <div class="field">
@@ -689,7 +697,7 @@ async function handleSubmit() {
   else if (!/^[^@]+@[^@]+\.[^@]+$/.test(email.trim())) formErrors.email = "Please enter a valid email address.";
   if (!clockNumber.trim())    formErrors.clockNumber = "Please enter your clock number.";
   if (!title.trim())          formErrors.title = "Please enter your title.";
-  if (!location.trim())       formErrors.location = "Please enter your location.";
+  if (!workLocation.trim())   formErrors.location = "Please enter your location.";
   if (!manager.trim())        formErrors.manager = "Please enter your manager's name.";
   if (children.some(c=>!c.trim()))       formErrors.children = "Please fill in all children's names.";
   if (childAges.some((a,i)=>children[i].trim()&&!a.trim())) formErrors.childAges = "Please fill in all children's ages.";
@@ -711,7 +719,7 @@ async function handleSubmit() {
   const reg = {
     associateName: associateName.trim(), email: email.trim(),
     clockNumber: clockNumber.trim(), title: title.trim(),
-    location: location.trim(), manager: manager.trim(),
+    location: workLocation.trim(), manager: manager.trim(),
     children: children.map(c=>c.trim()).filter(Boolean),
     childAges: childAges.slice(0, children.filter(c=>c.trim()).length),
     sessions, getInvolved, consentAccepted,
@@ -730,7 +738,7 @@ async function handleSubmit() {
 }
 
 function resetForm() {
-  associateName=""; email=""; clockNumber=""; title=""; location=""; manager="";
+  associateName=""; email=""; clockNumber=""; title=""; workLocation=""; manager="";
   children=[""]; childAges=[""]; selectedActivities={}; formErrors={};
   submittedReg=null; getInvolved=""; consentAccepted=false;
   view="home"; render(); loadLiveData();
@@ -743,12 +751,16 @@ function tryAdminLogin() {
 }
 
 async function loadLiveData() {
-  loadingData=true; loadError=null; render();
+  loadingData=true; loadError=null;
+  try { render(); } catch(e) {}
   try {
     liveRecords = await fetchAllRegistrations();
     enrollment = computeEnrollment(liveRecords);
-  } catch(err) { loadError = err.message; }
-  loadingData=false; render();
+  } catch(err) {
+    loadError = err.message;
+  }
+  loadingData=false;
+  try { render(); } catch(e) {}
 }
 
 async function refreshData() { await loadLiveData(); }
@@ -770,7 +782,14 @@ function exportCSV() {
 }
 
 render();
-loadLiveData();
+// Load live data separately so a network error never blanks the page
+setTimeout(() => {
+  loadLiveData().catch(err => {
+    loadError = err.message;
+    loadingData = false;
+    render();
+  });
+}, 0);
 </script>
 </body>
 </html>
