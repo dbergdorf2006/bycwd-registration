@@ -1,116 +1,148 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bring Your Child to Work Day — Registration</title>
+  <title>Take A Child To Work Day — Registration</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f4f0; color: #1a1a1a; min-height: 100vh; }
-
     header { background: #fff; border-bottom: 1px solid #e5e4e0; padding: 14px 24px; display: flex; align-items: center; }
     header h1 { font-size: 17px; font-weight: 600; flex: 1; }
-
-    main { max-width: 680px; margin: 0 auto; padding: 2rem 1rem 4rem; }
+    main { max-width: 700px; margin: 0 auto; padding: 2rem 1rem 4rem; }
 
     .card { background: #fff; border: 1px solid #e5e4e0; border-radius: 12px; padding: 20px 24px; margin-bottom: 16px; }
-    .card-title { font-size: 12px; font-weight: 600; color: #888; margin-bottom: 14px; text-transform: uppercase; letter-spacing: .06em; }
+    .card-title { font-size: 12px; font-weight: 600; color: #888; margin-bottom: 16px; text-transform: uppercase; letter-spacing: .06em; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    @media(max-width:520px){ .two-col { grid-template-columns: 1fr; } }
 
     label { display: block; font-size: 14px; font-weight: 500; color: #444; margin-bottom: 6px; }
-    input[type="text"], input[type="password"] { width: 100%; padding: 10px 14px; border: 1px solid #ddd; border-radius: 8px; font-size: 15px; background: #fafafa; outline: none; transition: border-color .15s, box-shadow .15s; }
+    label .req { color: #d94040; margin-left: 2px; }
+    input[type="text"], input[type="email"], input[type="password"] {
+      width: 100%; padding: 10px 14px; border: 1px solid #ddd; border-radius: 8px;
+      font-size: 15px; background: #fafafa; outline: none;
+      transition: border-color .15s, box-shadow .15s;
+    }
     input:focus { border-color: #4a7cf7; background: #fff; box-shadow: 0 0 0 3px rgba(74,124,247,.12); }
+    input.has-error { border-color: #d94040; }
     .field { margin-bottom: 18px; }
+    .field:last-child { margin-bottom: 0; }
     .error { color: #d94040; font-size: 13px; margin-top: 5px; }
 
     .btn { padding: 10px 22px; border-radius: 8px; font-size: 15px; font-weight: 500; cursor: pointer; border: 1px solid transparent; transition: all .15s; }
-    .btn-primary { background: #4a7cf7; color: #fff; border-color: #4a7cf7; }
-    .btn-primary:hover { background: #3a6ce7; }
+    .btn-primary { background: #1a4fa8; color: #fff; border-color: #1a4fa8; }
+    .btn-primary:hover { background: #163e85; }
     .btn-primary:disabled { opacity: .5; cursor: default; }
     .btn-outline { background: transparent; color: #444; border-color: #ddd; }
     .btn-outline:hover { background: #f5f4f0; }
     .btn-ghost { background: none; border: none; color: #888; font-size: 14px; cursor: pointer; padding: 0; }
     .btn-ghost:hover { color: #333; }
-    .btn-link { background: none; border: none; color: #4a7cf7; font-size: 13px; cursor: pointer; padding: 0; }
+    .btn-link { background: none; border: none; color: #1a4fa8; font-size: 13px; cursor: pointer; padding: 0; }
     .btn-full { width: 100%; padding: 13px; font-size: 16px; }
 
-    .child-row { display: flex; gap: 8px; margin-bottom: 8px; }
-    .child-row input { flex: 1; }
-    .btn-remove { background: none; border: 1px solid #ddd; border-radius: 8px; width: 38px; cursor: pointer; color: #d94040; font-size: 18px; flex-shrink: 0; }
+    /* Child rows */
+    .child-card { background: #f9f9f9; border: 1px solid #e5e4e0; border-radius: 10px; padding: 14px 16px; margin-bottom: 10px; }
+    .child-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .child-card-label { font-size: 13px; font-weight: 600; color: #555; }
+    .btn-remove { background: none; border: 1px solid #ddd; border-radius: 6px; padding: 3px 10px; cursor: pointer; color: #d94040; font-size: 13px; font-weight: 500; }
+    .btn-remove:hover { background: #fff5f5; border-color: #f5c5c5; }
 
+    /* Activity blocks */
     .block-wrap { border: 1px solid #e5e4e0; border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; transition: border-color .15s, background .15s; }
-    .block-wrap.selected { border-color: #4a7cf7; background: #f0f5ff; }
+    .block-wrap.selected { border-color: #1a4fa8; background: #f0f4ff; }
     .block-wrap.disabled { opacity: .4; pointer-events: none; }
     .block-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
     .block-label { font-weight: 600; font-size: 14px; }
     .block-time { font-size: 12px; color: #888; margin-left: 6px; }
-
     .act-grid { display: grid; gap: 7px; }
     .act-btn { display: flex; justify-content: space-between; align-items: center; padding: 9px 14px; border-radius: 8px; border: 1px solid #ddd; background: #fff; cursor: pointer; font-size: 14px; transition: all .12s; text-align: left; width: 100%; }
-    .act-btn:hover:not(:disabled) { border-color: #4a7cf7; background: #f8f9ff; }
-    .act-btn.chosen { border: 2px solid #4a7cf7; font-weight: 600; }
+    .act-btn:hover:not(:disabled) { border-color: #1a4fa8; background: #f8f9ff; }
+    .act-btn.chosen { border: 2px solid #1a4fa8; font-weight: 600; }
     .act-btn:disabled { opacity: .45; cursor: default; }
     .act-spots { font-size: 12px; color: #999; white-space: nowrap; margin-left: 10px; }
     .act-spots.full { color: #d94040; }
     .act-spots.low { color: #e07b00; }
 
-    .summary-box { background: #f0f5ff; border: 1px solid #c7d8fd; border-radius: 10px; padding: 14px 16px; margin-bottom: 20px; }
+    /* Info box */
+    .info-box { background: #f0f4ff; border: 1px solid #c7d4fd; border-radius: 10px; padding: 16px 18px; margin-bottom: 14px; }
+    .info-box p { font-size: 14px; color: #1a1a2e; margin-bottom: 6px; }
+    .info-box ul { padding-left: 20px; }
+    .info-box ul li { font-size: 14px; color: #333; margin-bottom: 4px; line-height: 1.5; }
+
+    /* Consent */
+    .consent-box { background: #fff9f0; border: 1px solid #f0d8a0; border-radius: 10px; padding: 16px 18px; margin-bottom: 14px; }
+    .consent-box p, .consent-box li { font-size: 13px; color: #5a4010; line-height: 1.7; margin-bottom: 6px; }
+    .consent-box ul { padding-left: 18px; margin-bottom: 10px; }
+    .consent-check { display: flex; align-items: flex-start; gap: 10px; margin-top: 14px; cursor: pointer; }
+    .consent-check input[type="checkbox"] { width: 18px; height: 18px; min-width: 18px; margin-top: 2px; cursor: pointer; accent-color: #1a4fa8; }
+    .consent-check span { font-size: 14px; font-weight: 600; color: #1a1a1a; }
+
+    /* Optional radio */
+    .radio-group { display: grid; gap: 8px; }
+    .radio-opt { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border: 1px solid #ddd; border-radius: 8px; cursor: pointer; transition: all .12s; }
+    .radio-opt:hover { border-color: #1a4fa8; background: #f8f9ff; }
+    .radio-opt.chosen { border: 2px solid #1a4fa8; background: #f0f4ff; }
+    .radio-opt input[type="radio"] { accent-color: #1a4fa8; width: 16px; height: 16px; }
+    .radio-opt label { font-size: 14px; cursor: pointer; margin: 0; font-weight: 400; }
+
+    /* Summary */
+    .summary-box { background: #f0f4ff; border: 1px solid #c7d4fd; border-radius: 10px; padding: 14px 16px; margin-bottom: 20px; }
     .summary-box p { font-size: 14px; margin-bottom: 4px; color: #333; }
 
-    .confirm-center { text-align: center; padding: 2rem 0; }
+    /* Confirm */
     .confirm-card { background: #f5f4f0; border-radius: 12px; padding: 16px 20px; text-align: left; margin: 20px 0; }
     .confirm-card p { font-size: 14px; color: #444; margin-bottom: 6px; }
-    .pill { display: inline-block; background: #e8effe; color: #3a5cb0; border-radius: 20px; padding: 3px 12px; font-size: 12px; font-weight: 500; margin: 3px 4px 3px 0; }
+    .pill { display: inline-block; background: #e0e8ff; color: #1a3a80; border-radius: 20px; padding: 3px 12px; font-size: 12px; font-weight: 500; margin: 3px 4px 3px 0; }
 
+    /* Progress bar */
     .prog-wrap { height: 6px; background: #eee; border-radius: 3px; margin-top: 4px; }
     .prog-bar { height: 100%; border-radius: 3px; transition: width .3s; }
 
+    /* Admin */
     .reg-row { background: #fff; border: 1px solid #e5e4e0; border-radius: 10px; padding: 12px 16px; margin-bottom: 8px; }
     .reg-name { font-weight: 600; font-size: 14px; margin-bottom: 3px; }
-    .reg-meta { font-size: 13px; color: #777; margin-bottom: 6px; }
+    .reg-meta { font-size: 13px; color: #777; margin-bottom: 6px; line-height: 1.6; }
 
     .home-block { background: #fff; border: 1px solid #e5e4e0; border-radius: 10px; padding: 12px 16px; margin-bottom: 8px; }
-    .counter { display: inline-block; background: #e8effe; color: #3a5cb0; border-radius: 20px; padding: 2px 10px; font-size: 12px; font-weight: 600; margin: 2px 4px 2px 0; }
+    .counter { display: inline-block; background: #e0e8ff; color: #1a3a80; border-radius: 20px; padding: 2px 10px; font-size: 12px; font-weight: 600; margin: 2px 4px 2px 0; }
     .counter.warn { background: #fff3e0; color: #e07b00; }
     .counter.full { background: #fdeaea; color: #d94040; }
 
-    .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid #ddd; border-top-color: #4a7cf7; border-radius: 50%; animation: spin .7s linear infinite; vertical-align: middle; margin-right: 6px; }
+    .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid #ddd; border-top-color: #1a4fa8; border-radius: 50%; animation: spin .7s linear infinite; vertical-align: middle; margin-right: 6px; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
     .alert { border-radius: 10px; padding: 14px 18px; margin-bottom: 16px; font-size: 14px; }
-    .alert-warn { background: #fffbe6; border: 1px solid #f0d080; color: #7a5c00; }
     .alert-err { background: #fff5f5; border: 1px solid #f5c5c5; color: #a03030; }
-    .alert-ok { background: #f0faf0; border: 1px solid #a0d8a0; color: #2a6a2a; }
 
     .tab-bar { display: flex; gap: 4px; margin-bottom: 20px; background: #f0eee8; border-radius: 8px; padding: 4px; }
-    .tab { flex: 1; padding: 8px; border: none; background: none; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; color: #888; transition: all .15s; }
+    .tab { flex: 1; padding: 8px; border: none; background: none; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; color: #888; transition: all .15s; }
     .tab.active { background: #fff; color: #1a1a1a; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
 
     .admin-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
     .admin-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 
+    code { background: #f0eee8; border-radius: 4px; padding: 1px 6px; font-family: monospace; font-size: 13px; color: #333; }
+    .env-box { background: #1e1e2e; border-radius: 10px; padding: 16px 20px; margin: 12px 0; font-family: monospace; font-size: 13px; color: #cdd6f4; line-height: 2; }
+    .env-box span { color: #89b4fa; }
     .setup-steps { counter-reset: step; }
     .setup-step { counter-increment: step; display: flex; gap: 14px; margin-bottom: 20px; }
-    .setup-step::before { content: counter(step); display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; min-width: 28px; background: #4a7cf7; color: #fff; border-radius: 50%; font-size: 13px; font-weight: 700; margin-top: 2px; }
+    .setup-step::before { content: counter(step); display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; min-width: 28px; background: #1a4fa8; color: #fff; border-radius: 50%; font-size: 13px; font-weight: 700; margin-top: 2px; }
     .setup-step-body { flex: 1; }
     .setup-step-body strong { display: block; font-size: 15px; margin-bottom: 4px; }
     .setup-step-body p, .setup-step-body ul { font-size: 14px; color: #555; line-height: 1.7; }
     .setup-step-body ul { padding-left: 18px; }
-    code { background: #f0eee8; border-radius: 4px; padding: 1px 6px; font-family: monospace; font-size: 13px; color: #333; }
-
-    .env-box { background: #1e1e2e; border-radius: 10px; padding: 16px 20px; margin: 12px 0; font-family: monospace; font-size: 13px; color: #cdd6f4; line-height: 2; }
-    .env-box span { color: #89b4fa; }
   </style>
 </head>
 <body>
 <header>
-  <h1>🌟 Bring Your Child to Work Day</h1>
+  <h1>🌟 Take A Child To Work Day — Registration</h1>
   <button class="btn-ghost" onclick="goAdmin()" style="font-size:13px;color:#bbb">Admin</button>
 </header>
 <main id="app"></main>
 
 <script>
-// ─── ACTIVITY DATA ─────────────────────────────────────────────────────────
-// Edit these to match your actual schedule and capacities
+// ─── ACTIVITY DATA ──────────────────────────────────────────────────────────
 const TIME_BLOCKS = [
   { id:"A", label:"Block A", time:"9:00 AM – 10:00 AM", activities:[
     { id:"A1", name:"Science Experiments Lab", capacity:20 },
@@ -141,7 +173,7 @@ const TIME_BLOCKS = [
 
 const ADMIN_PASSWORD = "admin2025";
 
-// ─── PROXY API (calls our Netlify function, not Airtable directly) ──────────
+// ─── PROXY API ──────────────────────────────────────────────────────────────
 async function proxyRequest(method, body, offset) {
   const url = offset ? `/api/airtable?offset=${encodeURIComponent(offset)}` : "/api/airtable";
   const res = await fetch(url, {
@@ -165,27 +197,39 @@ async function fetchAllRegistrations() {
 }
 
 async function submitRegistration(reg) {
+  // Build children string with ages: "Emma (8), Liam (10)"
+  const childrenStr = reg.children.map((c,i) => {
+    const age = reg.childAges[i] ? ` (age ${reg.childAges[i]})` : "";
+    return c + age;
+  }).join(", ");
+
   return proxyRequest("POST", {
     fields: {
-      "Parent Name": reg.parentName,
-      "Children": reg.children.join(", "),
-      "Number of Children": reg.children.length,
-      "Total Headcount": 1 + reg.children.length,
-      "Session 1": reg.sessions[0] || "",
-      "Session 2": reg.sessions[1] || "",
-      "Submitted At": new Date().toISOString(),
+      "Associate Name":           reg.associateName,
+      "Email Address":            reg.email,
+      "Clock Number":             reg.clockNumber,
+      "Title":                    reg.title,
+      "Location":                 reg.location,
+      "Direct Manager / Supervisor": reg.manager,
+      "Children":                 childrenStr,
+      "Number of Children":       reg.children.length,
+      "Total Headcount":          1 + reg.children.length,
+      "Session 1":                reg.sessions[0] || "",
+      "Session 2":                reg.sessions[1] || "",
+      "Get Involved":             reg.getInvolved || "No response",
+      "Consent Accepted":         reg.consentAccepted ? "Yes" : "No",
+      "Submitted At":             new Date().toISOString(),
     }
   });
 }
 
-// ─── HELPERS ───────────────────────────────────────────────────────────────
+// ─── HELPERS ────────────────────────────────────────────────────────────────
 function getActivity(id) { return TIME_BLOCKS.flatMap(b=>b.activities).find(a=>a.id===id); }
-function getBlock(id) { return TIME_BLOCKS.find(b=>b.id===id); }
+function getBlock(id)    { return TIME_BLOCKS.find(b=>b.id===id); }
 function getBlockForActivity(aid) { return TIME_BLOCKS.find(b=>b.activities.some(a=>a.id===aid)); }
 function esc(s) {
   return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 }
-
 function computeEnrollment(records) {
   const e = {};
   TIME_BLOCKS.forEach(b=>b.activities.forEach(a=>e[a.id]=0));
@@ -199,13 +243,20 @@ function computeEnrollment(records) {
   return e;
 }
 
-// ─── STATE ─────────────────────────────────────────────────────────────────
+// ─── STATE ──────────────────────────────────────────────────────────────────
 let view = "home";
 let liveRecords = [], enrollment = {}, loadingData = false, loadError = null;
-let parentName = "", children = [""], selectedActivities = {}, formErrors = {}, submitting = false, submittedReg = null;
+
+// Form state
+let associateName = "", email = "", clockNumber = "", title = "", location = "", manager = "";
+let children = [""], childAges = [""];
+let selectedActivities = {}, formErrors = {}, submitting = false, submittedReg = null;
+let getInvolved = "", consentAccepted = false;
+
+// Admin state
 let adminAuthed = false, adminTab = "capacity";
 
-// ─── RENDER ────────────────────────────────────────────────────────────────
+// ─── RENDER ─────────────────────────────────────────────────────────────────
 function render() {
   const app = document.getElementById("app");
   if      (view==="home")     app.innerHTML = renderHome();
@@ -214,12 +265,12 @@ function render() {
   else if (view==="admin")    app.innerHTML = renderAdmin();
 }
 
-// ─── HOME ──────────────────────────────────────────────────────────────────
+// ─── HOME ───────────────────────────────────────────────────────────────────
 function renderHome() {
   const blocksHtml = TIME_BLOCKS.map(b => {
     const acts = b.activities.map(a => {
       const filled = enrollment[a.id]||0;
-      const pct = Math.min(100,Math.round(filled/a.capacity*100));
+      const pct = Math.min(100, Math.round(filled/a.capacity*100));
       const cls = pct>=100?"full":pct>=80?"warn":"";
       return `<span class="counter ${cls}">${esc(a.name)}: ${filled}/${a.capacity}</span>`;
     }).join("");
@@ -233,24 +284,37 @@ function renderHome() {
     ? `<p style="font-size:13px;color:#aaa;margin-bottom:12px"><span class="spinner"></span>Loading availability…</p>`
     : loadError
     ? `<div class="alert alert-err" style="margin-bottom:12px">⚠️ Could not load live data: ${esc(loadError)}</div>`
-    : `<p style="font-size:13px;color:#aaa;margin-bottom:12px">${liveRecords.length} parent${liveRecords.length!==1?"s":""} registered so far</p>`;
+    : `<p style="font-size:13px;color:#aaa;margin-bottom:12px">${liveRecords.length} associate${liveRecords.length!==1?"s":""} registered so far</p>`;
 
   return `<div style="text-align:center;padding:2rem 0 1.5rem">
       <div style="font-size:48px;margin-bottom:12px">🌟</div>
-      <h2 style="font-size:26px;font-weight:700;margin-bottom:8px">Bring Your Child to Work Day</h2>
-      <p style="color:#666;font-size:15px;margin-bottom:24px">Register yourself and your children.<br>Choose <strong>2 activity sessions</strong> from 5 time blocks.</p>
+      <h2 style="font-size:26px;font-weight:700;margin-bottom:8px">Take A Child To Work Day</h2>
+      <p style="color:#666;font-size:15px;margin-bottom:6px">Register yourself and your children for this year's event.</p>
+      <p style="color:#666;font-size:15px;margin-bottom:24px">Choose <strong>2 activity sessions</strong> from 5 time blocks.</p>
       <button class="btn btn-primary" style="font-size:16px;padding:12px 36px" onclick="goRegister()">Register Now</button>
     </div>
     ${status}
     ${blocksHtml}`;
 }
 
-// ─── CHILD ROWS BUILDER ────────────────────────────────────────────────────
+// ─── CHILD ROWS ─────────────────────────────────────────────────────────────
 function buildChildRows() {
-  return children.map((c,i)=>`
-    <div class="child-row" data-index="${i}">
-      <input class="child-input" type="text" placeholder="Child ${i+1} name" value="${esc(c)}" data-index="${i}" />
-      ${children.length>1?`<button class="btn-remove" data-remove="${i}" type="button">x</button>`:""}
+  return children.map((c,i) => `
+    <div class="child-card" data-index="${i}">
+      <div class="child-card-header">
+        <span class="child-card-label">Child ${i+1}</span>
+        ${children.length>1 ? `<button class="btn-remove" data-remove="${i}" type="button">Remove</button>` : ""}
+      </div>
+      <div class="two-col">
+        <div class="field" style="margin-bottom:0">
+          <label>Name <span class="req">*</span></label>
+          <input class="child-input" type="text" placeholder="Child's full name" value="${esc(c)}" data-index="${i}" data-field="name" />
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <label>Age <span class="req">*</span></label>
+          <input class="child-age-input" type="text" placeholder="e.g. 8" value="${esc(childAges[i]||"")}" data-index="${i}" data-field="age" />
+        </div>
+      </div>
     </div>`).join("");
 }
 
@@ -259,118 +323,216 @@ function attachChildListeners() {
   if (!old) return;
   const container = old.cloneNode(true);
   old.parentNode.replaceChild(container, old);
+
   container.addEventListener("input", e => {
-    if (e.target.classList.contains("child-input")) {
-      children[+e.target.dataset.index] = e.target.value;
-      formErrors.children = null;
-    }
+    const idx = +e.target.dataset.index;
+    if (e.target.classList.contains("child-input"))     { children[idx] = e.target.value; formErrors.children = null; }
+    if (e.target.classList.contains("child-age-input")) { childAges[idx] = e.target.value; formErrors.childAges = null; }
   });
+
   container.addEventListener("click", e => {
     const btn = e.target.closest("[data-remove]");
     if (!btn) return;
     e.preventDefault();
     const idx = +btn.dataset.remove;
-    container.querySelectorAll(".child-input").forEach(inp => {
-      children[+inp.dataset.index] = inp.value;
-    });
+    // Sync current values
+    container.querySelectorAll(".child-input").forEach(inp => { children[+inp.dataset.index] = inp.value; });
+    container.querySelectorAll(".child-age-input").forEach(inp => { childAges[+inp.dataset.index] = inp.value; });
     children.splice(idx, 1);
+    childAges.splice(idx, 1);
     formErrors.children = null;
     container.innerHTML = buildChildRows();
     attachChildListeners();
-    updateAddChildBtn();
+    const btn2 = document.getElementById("add-child-btn");
+    if (btn2) btn2.style.display = children.length >= 8 ? "none" : "";
   });
 }
 
-function updateAddChildBtn() {
-  const btn = document.getElementById("add-child-btn");
-  if (btn) btn.style.display = children.length >= 8 ? "none" : "";
-}
-
-// ─── REGISTER ──────────────────────────────────────────────────────────────
+// ─── REGISTER ───────────────────────────────────────────────────────────────
 function renderRegister() {
   const selBlocks = Object.keys(selectedActivities).filter(k=>selectedActivities[k]);
   const validKids = children.filter(c=>c.trim());
   const headcount = 1 + validKids.length;
 
-  const childRows = buildChildRows();
+  const fe = formErrors;
 
-  const blocksHtml = TIME_BLOCKS.map(b=>{
+  // Activity blocks
+  const blocksHtml = TIME_BLOCKS.map(b => {
     const isSel = !!selectedActivities[b.id];
-    const isDisabled = !isSel && selBlocks.length>=2;
-    const acts = b.activities.map(a=>{
-      const filled=enrollment[a.id]||0, remaining=a.capacity-filled;
-      const isFull=remaining<=0, noRoom=remaining>0&&remaining<headcount;
-      const isChosen=selectedActivities[b.id]===a.id;
-      const dis=(isFull||(noRoom&&!isChosen))?"disabled":"";
-      const sc=isFull?"full":noRoom?"low":"";
-      const st=isFull?"Full":noRoom?`Only ${remaining} spot${remaining!==1?"s":""}`:remaining>=a.capacity?`${a.capacity} spots`:`${remaining} spots`;
+    const isDisabled = !isSel && selBlocks.length >= 2;
+    const acts = b.activities.map(a => {
+      const filled = enrollment[a.id]||0, remaining = a.capacity - filled;
+      const isFull = remaining<=0, noRoom = remaining>0 && remaining<headcount;
+      const isChosen = selectedActivities[b.id]===a.id;
+      const dis = (isFull||(noRoom&&!isChosen)) ? "disabled" : "";
+      const sc = isFull?"full":noRoom?"low":"";
+      const st = isFull?"Full":noRoom?`Only ${remaining} spot${remaining!==1?"s":""}`:remaining>=a.capacity?`${a.capacity} spots`:`${remaining} spots`;
       return `<button class="act-btn ${isChosen?"chosen":""}" ${dis} onclick="selectActivity('${b.id}','${a.id}')">
         <span>${esc(a.name)}</span><span class="act-spots ${sc}">${st}</span>
       </button>`;
     }).join("");
-    const clr=isSel?`<button class="btn-link" onclick="clearBlock('${b.id}')">Clear</button>`:"";
+    const clr = isSel ? `<button class="btn-link" onclick="clearBlock('${b.id}')">Clear</button>` : "";
     return `<div class="block-wrap ${isSel?"selected":""} ${isDisabled?"disabled":""}">
       <div class="block-header"><div><span class="block-label">${b.label}</span><span class="block-time">${b.time}</span></div>${clr}</div>
       <div class="act-grid">${acts}</div>
     </div>`;
   }).join("");
 
-  const summary = selBlocks.length>0?`<div class="summary-box">
-    <p style="font-weight:600;margin-bottom:8px">Your selections (${selBlocks.length}/2)</p>
+  // Session summary
+  const summary = selBlocks.length>0 ? `<div class="summary-box">
+    <p style="font-weight:600;margin-bottom:8px">Your selections (${selBlocks.length}/2 blocks)</p>
     ${selBlocks.map(bid=>{const a=getActivity(selectedActivities[bid]),b=getBlock(bid);
       return `<p>✓ <strong>${b.label}</strong> (${b.time}): ${esc(a?.name)}</p>`;}).join("")}
-  </div>`:"";
+  </div>` : "";
 
-  const btnLabel = submitting?`<span class="spinner"></span>Submitting…`:"Complete Registration →";
+  const btnLabel = submitting ? `<span class="spinner"></span>Submitting…` : "Complete Registration →";
 
-  return `<div style="margin-bottom:20px"><button class="btn-ghost" onclick="goHome()">← Back</button></div>
-    <h2 style="font-size:22px;font-weight:700;margin-bottom:24px">Register</h2>
+  return `
+    <div style="margin-bottom:20px"><button class="btn-ghost" onclick="goHome()">← Back</button></div>
+    <h2 style="font-size:22px;font-weight:700;margin-bottom:6px">Register</h2>
+    <p style="font-size:14px;color:#888;margin-bottom:24px">Fields marked <span style="color:#d94040">*</span> are required.</p>
+
+    <!-- ASSOCIATE INFO -->
     <div class="card">
-      <div class="card-title">Your info</div>
-      <div class="field">
-        <label>Your full name</label>
-        <input type="text" placeholder="Jane Smith" value="${esc(parentName)}" oninput="updateParent(this.value)" />
-        ${formErrors.parentName?`<p class="error">${formErrors.parentName}</p>`:""}
+      <div class="card-title">Associate Information</div>
+      <div class="two-col">
+        <div class="field">
+          <label>Associate's Name <span class="req">*</span></label>
+          <input type="text" placeholder="Jane Smith" value="${esc(associateName)}" oninput="associateName=this.value;formErrors.associateName=null" class="${fe.associateName?"has-error":""}" />
+          ${fe.associateName?`<p class="error">${fe.associateName}</p>`:""}
+        </div>
+        <div class="field">
+          <label>Email Address <span class="req">*</span></label>
+          <input type="email" placeholder="jane.smith@kohler.com" value="${esc(email)}" oninput="email=this.value;formErrors.email=null" class="${fe.email?"has-error":""}" />
+          ${fe.email?`<p class="error">${fe.email}</p>`:""}
+        </div>
       </div>
-      <div class="field" style="margin-bottom:0">
-        <label>Children attending</label>
-        <div id="child-rows">${childRows}</div>
-        ${formErrors.children?`<p class="error">${formErrors.children}</p>`:""}
-        ${children.length<8?`<button class="btn-link" id="add-child-btn" onclick="addChild()" style="margin-top:6px">+ Add another child</button>`:""}
+      <div class="two-col">
+        <div class="field">
+          <label>Clock Number <span class="req">*</span></label>
+          <input type="text" placeholder="e.g. 123456" value="${esc(clockNumber)}" oninput="clockNumber=this.value;formErrors.clockNumber=null" class="${fe.clockNumber?"has-error":""}" />
+          ${fe.clockNumber?`<p class="error">${fe.clockNumber}</p>`:""}
+        </div>
+        <div class="field">
+          <label>Title <span class="req">*</span></label>
+          <input type="text" placeholder="e.g. Senior Engineer" value="${esc(title)}" oninput="title=this.value;formErrors.title=null" class="${fe.title?"has-error":""}" />
+          ${fe.title?`<p class="error">${fe.title}</p>`:""}
+        </div>
+      </div>
+      <div class="two-col">
+        <div class="field">
+          <label>Location <span class="req">*</span></label>
+          <input type="text" placeholder="e.g. Kohler, WI" value="${esc(location)}" oninput="location=this.value;formErrors.location=null" class="${fe.location?"has-error":""}" />
+          ${fe.location?`<p class="error">${fe.location}</p>`:""}
+        </div>
+        <div class="field">
+          <label>Direct Manager / Supervisor <span class="req">*</span></label>
+          <input type="text" placeholder="Manager's name" value="${esc(manager)}" oninput="manager=this.value;formErrors.manager=null" class="${fe.manager?"has-error":""}" />
+          ${fe.manager?`<p class="error">${fe.manager}</p>`:""}
+        </div>
       </div>
     </div>
+
+    <!-- CHILDREN -->
     <div class="card">
-      <div class="card-title">Choose 2 time blocks</div>
-      <p style="font-size:13px;color:#888;margin-bottom:14px">You + ${validKids.length} child${validKids.length!==1?"ren":""} = <strong>${headcount} spot${headcount!==1?"s":""}</strong> per activity.</p>
+      <div class="card-title">Children Attending</div>
+      <div id="child-rows">${buildChildRows()}</div>
+      ${fe.children?`<p class="error" style="margin-top:6px">${fe.children}</p>`:""}
+      ${fe.childAges?`<p class="error" style="margin-top:6px">${fe.childAges}</p>`:""}
+      ${children.length<8?`<button class="btn-link" id="add-child-btn" onclick="addChild()" style="margin-top:10px">+ Add another child</button>`:""}
+    </div>
+
+    <!-- ACTIVITY SESSIONS -->
+    <div class="card">
+      <div class="card-title">Activity Sessions — Choose 2</div>
+      <p style="font-size:13px;color:#888;margin-bottom:14px">
+        You + ${validKids.length} child${validKids.length!==1?"ren":""} = <strong>${headcount} spot${headcount!==1?"s":""}</strong> reserved per activity. Select one activity per block, 2 blocks total.
+      </p>
       ${blocksHtml}
-      ${formErrors.activities?`<p class="error">${formErrors.activities}</p>`:""}
+      ${fe.activities?`<p class="error">${fe.activities}</p>`:""}
     </div>
+
     ${summary}
-    ${formErrors.submit?`<p class="error" style="margin-bottom:10px">${formErrors.submit}</p>`:""}
+
+    <!-- TACTWD INFO -->
+    <div class="card">
+      <div class="card-title">Event Check-In &amp; Activities</div>
+      <div class="info-box">
+        <p>I understand that I am required to check-in for Take A Child To Work Day at the <strong>Appley Theatre</strong> prior to participating in any event activations. I plan to visit and/or participate in the following TACTWD Activities:</p>
+        <ul style="margin-top:10px">
+          <li><strong>Registration Check-In</strong> | Appley Theatre &nbsp;7:30a – 4:00p</li>
+          <li><strong>Kohler Design Center Self Guided Tour</strong> | Open to the public &nbsp;9:00a – 5:00p</li>
+          <li><strong>Studio Photo Shoot at The Beacon</strong> | Available &nbsp;8:00a – 12:00p</li>
+          <li><strong>Kohler Archives Self Guided Tour at The Beacon</strong> | Available &nbsp;8:00a – 12:00p</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- GET INVOLVED (optional) -->
+    <div class="card">
+      <div class="card-title">Want to be closer to the action? <span style="font-weight:400;color:#aaa;font-size:11px">Optional</span></div>
+      <div class="radio-group">
+        <div class="radio-opt ${getInvolved==="PACK Member"?"chosen":""}" onclick="getInvolved='PACK Member';render()">
+          <input type="radio" name="getInvolved" ${getInvolved==="PACK Member"?"checked":""} readonly />
+          <label>I'd like to become a PACK Member!</label>
+        </div>
+        <div class="radio-opt ${getInvolved==="Volunteer"?"chosen":""}" onclick="getInvolved='Volunteer';render()">
+          <input type="radio" name="getInvolved" ${getInvolved==="Volunteer"?"checked":""} readonly />
+          <label>I'd like to volunteer to help with TACTWD!</label>
+        </div>
+        ${getInvolved ? `<button class="btn-link" onclick="getInvolved='';render()" style="margin-top:4px">Clear selection</button>` : ""}
+      </div>
+    </div>
+
+    <!-- CONSENT -->
+    <div class="card">
+      <div class="card-title">Consent &amp; Acknowledgement <span class="req">*</span></div>
+      <div class="consent-box">
+        <ul>
+          <li>By choosing to have your child participate in Take A Child to Work Day, you, as the parent or legal guardian, are assuming all potential liability for any injuries or illnesses that you are agreeing that you will hold Kohler Co., its related entities, and insurers harmless from any and all potential liability that may arise from this event.</li>
+          <li>You understand that all children accompanying you despite their age, will be required to stay with you during the duration of your participation in Take A Child To Work Day.</li>
+          <li>You agree to discuss your participation in this event with your supervisor and confirm their support.</li>
+          <li>You understand that you must stay with the event volunteers and activation staff at all times. Kohler associates are not permitted to visit locations outside of the approved event activations.</li>
+          <li>You acknowledge that you are required to check-in for this event at the Appley Theatre prior to participating in any event activations.</li>
+        </ul>
+        <label class="consent-check">
+          <input type="checkbox" id="consent-cb" ${consentAccepted?"checked":""} onchange="consentAccepted=this.checked;formErrors.consent=null" />
+          <span>I accept the terms</span>
+        </label>
+        ${fe.consent?`<p class="error" style="margin-top:6px">${fe.consent}</p>`:""}
+      </div>
+    </div>
+
+    ${fe.submit?`<p class="error" style="margin-bottom:10px">${fe.submit}</p>`:""}
     <button class="btn btn-primary btn-full" onclick="handleSubmit()" ${submitting?"disabled":""}>${btnLabel}</button>`;
 }
 
-// ─── CONFIRM ───────────────────────────────────────────────────────────────
+// ─── CONFIRM ────────────────────────────────────────────────────────────────
 function renderConfirm() {
   const r = submittedReg;
   const pills = r.sessions.map(s=>`<span class="pill">${esc(s)}</span>`).join("");
-  return `<div class="confirm-center">
+  const childrenStr = r.children.map((c,i)=>`${esc(c)}${r.childAges[i]?" (age "+esc(r.childAges[i])+")":""}`).join(", ");
+  return `<div style="text-align:center;padding:2rem 0">
     <div style="font-size:52px;margin-bottom:16px">🎉</div>
     <h2 style="font-size:24px;font-weight:700;margin-bottom:8px">You're registered!</h2>
-    <p style="color:#666;font-size:15px;margin-bottom:4px">See you at Bring Your Child to Work Day,</p>
-    <p style="font-size:18px;font-weight:600;margin-bottom:20px">${esc(r.parentName)}</p>
+    <p style="color:#666;font-size:15px;margin-bottom:4px">See you at Take A Child To Work Day,</p>
+    <p style="font-size:18px;font-weight:600;margin-bottom:20px">${esc(r.associateName)}</p>
     <div class="confirm-card">
-      <p><strong>Parent:</strong> ${esc(r.parentName)}</p>
-      <p><strong>Children:</strong> ${r.children.map(esc).join(", ")||"—"}</p>
+      <p><strong>Name:</strong> ${esc(r.associateName)}</p>
+      <p><strong>Email:</strong> ${esc(r.email)}</p>
+      <p><strong>Clock #:</strong> ${esc(r.clockNumber)} &nbsp;|&nbsp; <strong>Title:</strong> ${esc(r.title)}</p>
+      <p><strong>Location:</strong> ${esc(r.location)} &nbsp;|&nbsp; <strong>Manager:</strong> ${esc(r.manager)}</p>
+      <p style="margin-top:8px"><strong>Children:</strong> ${childrenStr||"—"}</p>
+      ${r.getInvolved?`<p><strong>Get Involved:</strong> ${esc(r.getInvolved)}</p>`:""}
       <p style="margin-top:10px"><strong>Sessions booked:</strong></p>
       <div style="margin-top:6px">${pills}</div>
     </div>
     <p style="font-size:13px;color:#aaa;margin-bottom:20px">Screenshot this page as your confirmation.</p>
-    <button class="btn btn-outline" onclick="resetForm()">Register another parent</button>
+    <button class="btn btn-outline" onclick="resetForm()">Register another associate</button>
   </div>`;
 }
 
-// ─── ADMIN ─────────────────────────────────────────────────────────────────
+// ─── ADMIN ──────────────────────────────────────────────────────────────────
 function renderAdmin() {
   if (!adminAuthed) {
     return `<div style="margin-bottom:20px"><button class="btn-ghost" onclick="goHome()">← Back</button></div>
@@ -389,13 +551,13 @@ function renderAdmin() {
   const tabs = `<div class="tab-bar">
     <button class="tab ${adminTab==="capacity"?"active":""}" onclick="setAdminTab('capacity')">Capacity</button>
     <button class="tab ${adminTab==="registrations"?"active":""}" onclick="setAdminTab('registrations')">Registrations (${liveRecords.length})</button>
-    <button class="tab ${adminTab==="setup"?"active":""}" onclick="setAdminTab('setup')">⚙ Setup guide</button>
+    <button class="tab ${adminTab==="setup"?"active":""}" onclick="setAdminTab('setup')">⚙ Setup</button>
   </div>`;
 
   let content = "";
   if (adminTab==="setup") content = renderSetupTab();
   else if (loadingData) content = `<p><span class="spinner"></span>Loading…</p>`;
-  else if (loadError) content = `<div class="alert alert-err">⚠️ ${esc(loadError)}<br><small>Check that your Netlify environment variables are set correctly (see Setup guide tab).</small></div>`;
+  else if (loadError) content = `<div class="alert alert-err">⚠️ ${esc(loadError)}</div>`;
   else if (adminTab==="capacity") content = renderCapacityTab();
   else if (adminTab==="registrations") content = renderRegistrationsTab();
 
@@ -413,12 +575,12 @@ function renderAdmin() {
 }
 
 function renderCapacityTab() {
-  if (!liveRecords.length && !loadError) return `<p style="color:#aaa;font-size:14px">No registrations yet — capacity is fully available.</p>`;
-  return TIME_BLOCKS.map(b=>{
-    const acts = b.activities.map(a=>{
-      const filled=enrollment[a.id]||0;
-      const pct=Math.min(100,Math.round(filled/a.capacity*100));
-      const color=pct>=100?"#d94040":pct>=80?"#e07b00":"#4a7cf7";
+  if (!liveRecords.length) return `<p style="color:#aaa;font-size:14px">No registrations yet — all capacity available.</p>`;
+  return TIME_BLOCKS.map(b => {
+    const acts = b.activities.map(a => {
+      const filled = enrollment[a.id]||0;
+      const pct = Math.min(100, Math.round(filled/a.capacity*100));
+      const color = pct>=100?"#d94040":pct>=80?"#e07b00":"#1a4fa8";
       return `<div style="margin-bottom:12px">
         <div style="display:flex;justify-content:space-between;font-size:13px;color:#555;margin-bottom:3px">
           <span>${esc(a.name)}</span><span style="font-weight:600">${filled}/${a.capacity}</span>
@@ -432,14 +594,18 @@ function renderCapacityTab() {
 
 function renderRegistrationsTab() {
   if (!liveRecords.length) return `<p style="color:#aaa;font-size:14px">No registrations yet.</p>`;
-  return liveRecords.slice().reverse().map(r=>{
-    const f=r.fields;
-    const s1=f["Session 1"]?`<span class="pill">${esc(f["Session 1"])}</span>`:"";
-    const s2=f["Session 2"]?`<span class="pill">${esc(f["Session 2"])}</span>`:"";
-    const date=f["Submitted At"]?new Date(f["Submitted At"]).toLocaleDateString():"";
+  return liveRecords.slice().reverse().map(r => {
+    const f = r.fields;
+    const s1 = f["Session 1"] ? `<span class="pill">${esc(f["Session 1"])}</span>` : "";
+    const s2 = f["Session 2"] ? `<span class="pill">${esc(f["Session 2"])}</span>` : "";
+    const date = f["Submitted At"] ? new Date(f["Submitted At"]).toLocaleDateString() : "";
+    const involved = f["Get Involved"] && f["Get Involved"]!=="No response" ? ` · ${esc(f["Get Involved"])}` : "";
     return `<div class="reg-row">
-      <div class="reg-name">${esc(f["Parent Name"]||"")}</div>
-      <div class="reg-meta">Children: ${esc(f["Children"]||"—")} · Headcount: ${f["Total Headcount"]||1} · ${date}</div>
+      <div class="reg-name">${esc(f["Associate Name"]||"")}</div>
+      <div class="reg-meta">
+        ${esc(f["Email Address"]||"")} · Clock: ${esc(f["Clock Number"]||"")} · ${esc(f["Title"]||"")} · ${esc(f["Location"]||"")}<br>
+        Manager: ${esc(f["Direct Manager / Supervisor"]||"")} · Children: ${esc(f["Children"]||"—")} · Headcount: ${f["Total Headcount"]||1}${involved} · ${date}
+      </div>
       <div>${s1}${s2}</div>
     </div>`;
   }).join("");
@@ -447,119 +613,115 @@ function renderRegistrationsTab() {
 
 function renderSetupTab() {
   return `<div class="card">
-    <div class="card-title">How to connect Airtable (one-time setup)</div>
-    <div class="setup-steps">
-
-      <div class="setup-step"><div class="setup-step-body">
-        <strong>Create a free Airtable account</strong>
-        <p>Go to <a href="https://airtable.com" target="_blank" style="color:#4a7cf7">airtable.com</a> and sign up. No credit card needed.</p>
-      </div></div>
-
-      <div class="setup-step"><div class="setup-step-body">
-        <strong>Create a Base and set up the table</strong>
-        <p>Click "Create a base" → name it anything (e.g. "BYCWD 2025"). Rename the default table to exactly <code>Registrations</code>. Add these columns:</p>
-        <ul>
-          <li><code>Parent Name</code> — Single line text</li>
-          <li><code>Children</code> — Long text</li>
-          <li><code>Number of Children</code> — Number</li>
-          <li><code>Total Headcount</code> — Number</li>
-          <li><code>Session 1</code> — Single line text</li>
-          <li><code>Session 2</code> — Single line text</li>
-          <li><code>Submitted At</code> — Single line text</li>
-        </ul>
-      </div></div>
-
-      <div class="setup-step"><div class="setup-step-body">
-        <strong>Get your Personal Access Token</strong>
-        <p>Go to <a href="https://airtable.com/create/tokens" target="_blank" style="color:#4a7cf7">airtable.com/create/tokens</a> → Create token → give it <code>data.records:read</code> and <code>data.records:write</code> scopes → select your base → copy the token.</p>
-      </div></div>
-
-      <div class="setup-step"><div class="setup-step-body">
-        <strong>Get your Base ID</strong>
-        <p>Open your base in Airtable. Your Base ID is in the URL:<br>
-        <code>airtable.com/<strong style="color:#4a7cf7">appXXXXXXXXXXXXXX</strong>/tbl…</code></p>
-      </div></div>
-
-      <div class="setup-step"><div class="setup-step-body">
-        <strong>Add environment variables in Netlify</strong>
-        <p>In your Netlify dashboard → Site → <strong>Site configuration → Environment variables</strong> → Add these three:</p>
-        <div class="env-box">
-          <span>AIRTABLE_API_KEY</span> = pat…your token…<br>
-          <span>AIRTABLE_BASE_ID</span> = appXXXXXXXXXXXXXX<br>
-          <span>AIRTABLE_TABLE_NAME</span> = Registrations
-        </div>
-        <p>After saving, go to <strong>Deploys → Trigger deploy → Deploy site</strong> to apply them.</p>
-      </div></div>
-
-      <div class="setup-step"><div class="setup-step-body">
-        <strong>Done! Click Refresh to verify</strong>
-        <p>Switch to the Capacity or Registrations tab and click ↻ Refresh. If it loads without errors, you're connected.</p>
-      </div></div>
-
-    </div>
+    <div class="card-title">Airtable column reference</div>
+    <p style="font-size:14px;color:#555;margin-bottom:14px">Make sure your Registrations table has all of these columns:</p>
+    <table style="width:100%;border-collapse:collapse;font-size:13px">
+      <thead><tr style="background:#f5f4f0">
+        <th style="text-align:left;padding:8px 12px;border:1px solid #e5e4e0">Column name</th>
+        <th style="text-align:left;padding:8px 12px;border:1px solid #e5e4e0">Type</th>
+      </tr></thead>
+      <tbody>
+        ${[
+          ["Associate Name","Single line text"],
+          ["Email Address","Email"],
+          ["Clock Number","Single line text"],
+          ["Title","Single line text"],
+          ["Location","Single line text"],
+          ["Direct Manager / Supervisor","Single line text"],
+          ["Children","Long text"],
+          ["Number of Children","Number"],
+          ["Total Headcount","Number"],
+          ["Session 1","Single line text"],
+          ["Session 2","Single line text"],
+          ["Get Involved","Single line text"],
+          ["Consent Accepted","Single line text"],
+          ["Submitted At","Single line text"],
+        ].map(([n,t])=>`<tr>
+          <td style="padding:8px 12px;border:1px solid #e5e4e0"><code>${n}</code></td>
+          <td style="padding:8px 12px;border:1px solid #e5e4e0;color:#666">${t}</td>
+        </tr>`).join("")}
+      </tbody>
+    </table>
   </div>`;
 }
 
-// ─── ACTIONS ───────────────────────────────────────────────────────────────
+// ─── ACTIONS ────────────────────────────────────────────────────────────────
 function goHome()     { view="home";     render(); loadLiveData(); }
 function goRegister() { view="register"; render(); }
 function goAdmin()    { view="admin";    render(); if(adminAuthed) loadLiveData(); }
 function exitAdmin()  { adminAuthed=false; goHome(); }
 function setAdminTab(t) { adminTab=t; render(); if(t!=="setup") loadLiveData(); }
 
-function updateParent(v) { parentName=v; formErrors.parentName=null; }
 function addChild() {
   if (children.length < 8) {
     const container = document.getElementById("child-rows");
     if (container) {
-      container.querySelectorAll(".child-input").forEach(inp => {
-        children[+inp.dataset.index] = inp.value;
-      });
+      container.querySelectorAll(".child-input").forEach(inp => { children[+inp.dataset.index] = inp.value; });
+      container.querySelectorAll(".child-age-input").forEach(inp => { childAges[+inp.dataset.index] = inp.value; });
     }
-    children.push("");
+    children.push(""); childAges.push("");
     const c2 = document.getElementById("child-rows");
     if (c2) {
       c2.innerHTML = buildChildRows();
       attachChildListeners();
-      updateAddChildBtn();
+      const btn = document.getElementById("add-child-btn");
+      if (btn) btn.style.display = children.length >= 8 ? "none" : "";
       const inputs = c2.querySelectorAll(".child-input");
       if (inputs.length) inputs[inputs.length-1].focus();
     }
   }
 }
-function selectActivity(bid,aid) { selectedActivities[bid]=aid; formErrors.activities=null; render(); }
+
+function selectActivity(bid, aid) { selectedActivities[bid]=aid; formErrors.activities=null; render(); }
 function clearBlock(bid) { delete selectedActivities[bid]; render(); }
 
 async function handleSubmit() {
-  // Sync any typed-but-not-yet-stored child values
+  // Sync child inputs
   const childContainer = document.getElementById("child-rows");
   if (childContainer) {
-    childContainer.querySelectorAll(".child-input").forEach(inp => {
-      children[+inp.dataset.index] = inp.value;
-    });
+    childContainer.querySelectorAll(".child-input").forEach(inp => { children[+inp.dataset.index] = inp.value; });
+    childContainer.querySelectorAll(".child-age-input").forEach(inp => { childAges[+inp.dataset.index] = inp.value; });
   }
+
   formErrors = {};
-  if (!parentName.trim()) formErrors.parentName = "Please enter your name.";
-  if (children.some(c=>!c.trim())) formErrors.children = "Please fill in all children's names.";
+  if (!associateName.trim())  formErrors.associateName = "Please enter your name.";
+  if (!email.trim())          formErrors.email = "Please enter your email address.";
+  else if (!/^[^@]+@[^@]+\.[^@]+$/.test(email.trim())) formErrors.email = "Please enter a valid email address.";
+  if (!clockNumber.trim())    formErrors.clockNumber = "Please enter your clock number.";
+  if (!title.trim())          formErrors.title = "Please enter your title.";
+  if (!location.trim())       formErrors.location = "Please enter your location.";
+  if (!manager.trim())        formErrors.manager = "Please enter your manager's name.";
+  if (children.some(c=>!c.trim()))       formErrors.children = "Please fill in all children's names.";
+  if (childAges.some((a,i)=>children[i].trim()&&!a.trim())) formErrors.childAges = "Please fill in all children's ages.";
   const selBlocks = Object.keys(selectedActivities).filter(k=>selectedActivities[k]);
-  if (selBlocks.length!==2) formErrors.activities = "Please select exactly 2 time blocks.";
-  if (Object.keys(formErrors).length) { render(); return; }
+  if (selBlocks.length!==2)  formErrors.activities = "Please select exactly 2 time blocks.";
+  if (!consentAccepted)       formErrors.consent = "You must accept the terms to register.";
+  if (Object.keys(formErrors).length) { render(); window.scrollTo(0,0); return; }
 
   const headcount = 1 + children.filter(c=>c.trim()).length;
   const actIds = Object.values(selectedActivities).filter(Boolean);
-  const capFail = actIds.find(aid=>{ const a=getActivity(aid); return a&&(enrollment[aid]||0)+headcount>a.capacity; });
+  const capFail = actIds.find(aid => { const a=getActivity(aid); return a&&(enrollment[aid]||0)+headcount>a.capacity; });
   if (capFail) { formErrors.activities="One or more activities is now full. Please choose different sessions."; render(); return; }
 
-  const sessions = actIds.map(aid=>{
+  const sessions = actIds.map(aid => {
     const a=getActivity(aid), b=getBlockForActivity(aid);
     return `${b?.label} (${b?.time}): ${a?.name}`;
   });
 
+  const reg = {
+    associateName: associateName.trim(), email: email.trim(),
+    clockNumber: clockNumber.trim(), title: title.trim(),
+    location: location.trim(), manager: manager.trim(),
+    children: children.map(c=>c.trim()).filter(Boolean),
+    childAges: childAges.slice(0, children.filter(c=>c.trim()).length),
+    sessions, getInvolved, consentAccepted,
+  };
+
   submitting=true; render();
   try {
-    await submitRegistration({ parentName:parentName.trim(), children:children.map(c=>c.trim()).filter(Boolean), sessions });
-    submittedReg = { parentName:parentName.trim(), children:children.map(c=>c.trim()).filter(Boolean), sessions };
-    actIds.forEach(aid=>{ enrollment[aid]=(enrollment[aid]||0)+headcount; });
+    await submitRegistration(reg);
+    submittedReg = reg;
+    actIds.forEach(aid => { enrollment[aid]=(enrollment[aid]||0)+headcount; });
     view="confirm";
   } catch(err) {
     formErrors.submit = `Submission failed: ${err.message}. Please try again or contact the organiser.`;
@@ -568,7 +730,9 @@ async function handleSubmit() {
 }
 
 function resetForm() {
-  parentName=""; children=[""]; selectedActivities={}; formErrors={}; submittedReg=null;
+  associateName=""; email=""; clockNumber=""; title=""; location=""; manager="";
+  children=[""]; childAges=[""]; selectedActivities={}; formErrors={};
+  submittedReg=null; getInvolved=""; consentAccepted=false;
   view="home"; render(); loadLiveData();
 }
 
@@ -583,24 +747,25 @@ async function loadLiveData() {
   try {
     liveRecords = await fetchAllRegistrations();
     enrollment = computeEnrollment(liveRecords);
-  } catch(err) {
-    loadError = err.message;
-  }
+  } catch(err) { loadError = err.message; }
   loadingData=false; render();
 }
 
 async function refreshData() { await loadLiveData(); }
 
 function exportCSV() {
-  const rows=[["Parent Name","Children","Number of Children","Total Headcount","Session 1","Session 2","Submitted At"]];
-  liveRecords.forEach(r=>{
-    const f=r.fields;
-    rows.push([f["Parent Name"]||"",f["Children"]||"",f["Number of Children"]||"",f["Total Headcount"]||"",f["Session 1"]||"",f["Session 2"]||"",f["Submitted At"]||""]);
+  const cols = ["Associate Name","Email Address","Clock Number","Title","Location",
+    "Direct Manager / Supervisor","Children","Number of Children","Total Headcount",
+    "Session 1","Session 2","Get Involved","Consent Accepted","Submitted At"];
+  const rows = [cols];
+  liveRecords.forEach(r => {
+    const f = r.fields;
+    rows.push(cols.map(c => f[c]||""));
   });
-  const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(",")).join("\n");
-  const blob=new Blob([csv],{type:"text/csv"});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement("a"); a.href=url; a.download="bycwd_registrations.csv"; a.click();
+  const csv = rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(",")).join("\n");
+  const blob = new Blob([csv],{type:"text/csv"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a"); a.href=url; a.download="tactwd_registrations.csv"; a.click();
   URL.revokeObjectURL(url);
 }
 
