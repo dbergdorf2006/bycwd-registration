@@ -222,7 +222,7 @@ async function submitRegistration(reg) {
       "Total Headcount":          1 + reg.children.length,
       "Session 1":                reg.sessions[0] || "",
       "Session 2":                reg.sessions[1] || "",
-      "Get Involved":             reg.getInvolved || "No response",
+      "Get Involved":             reg.getInvolved.length ? reg.getInvolved.join("; ") : "No response",
       "TACTWD Activities":        reg.tactwdActivities.length ? reg.tactwdActivities.join("; ") : "None selected",
       "Consent Accepted":         reg.consentAccepted ? "Yes" : "No",
       "Submitted At":             new Date().toISOString(),
@@ -258,7 +258,7 @@ let liveRecords = [], enrollment = {}, loadingData = false, loadError = null;
 let associateName = "", email = "", clockNumber = "", title = "", workLocation = "", manager = "";
 let children = [""], childAges = [""];
 let selectedActivities = {}, formErrors = {}, submitting = false, submittedReg = null;
-let getInvolved = "", consentAccepted = false;
+let getInvolved = [], consentAccepted = false;
 let tactwdActivities = [];  // multi-select optional activities
 
 // Admin state
@@ -269,7 +269,7 @@ function render() {
   try {
     const app = document.getElementById("app");
     if      (view==="home")     app.innerHTML = renderHome();
-    else if (view==="register") { app.innerHTML = renderRegister(); attachChildListeners(); }
+    else if (view==="register") { app.innerHTML = renderRegister(); attachChildListeners(); attachTactwdListeners(); attachGetInvolvedListeners(); }
     else if (view==="confirm")  app.innerHTML = renderConfirm();
     else if (view==="admin")    app.innerHTML = renderAdmin();
   } catch(err) {
@@ -396,7 +396,7 @@ function renderRegister() {
 
   // Session summary
   const summary = selBlocks.length>0 ? `<div class="summary-box">
-    <p style="font-weight:600;margin-bottom:8px">Your selections (${selBlocks.length}/2 blocks)</p>
+    <p style="font-weight:600;margin-bottom:8px">Your selections (${selBlocks.length}/2 blocks selected)</p>
     ${selBlocks.map(bid=>{const a=getActivity(selectedActivities[bid]),b=getBlock(bid);
       return `<p>✓ <strong>${b.label}</strong> (${b.time}): ${esc(a?.name)}</p>`;}).join("")}
   </div>` : "";
@@ -460,9 +460,9 @@ function renderRegister() {
 
     <!-- ACTIVITY SESSIONS -->
     <div class="card">
-      <div class="card-title">Activity Sessions — Choose 2</div>
+      <div class="card-title">Activity Sessions — Optional, up to 2 blocks</div>
       <p style="font-size:13px;color:#888;margin-bottom:14px">
-        You + ${validKids.length} child${validKids.length!==1?"ren":""} = <strong>${headcount} spot${headcount!==1?"s":""}</strong> reserved per activity. Select one activity per block, 2 blocks total.
+        You + ${validKids.length} child${validKids.length!==1?"ren":""} = <strong>${headcount} spot${headcount!==1?"s":""}</strong> reserved per activity. Optionally select one activity per block, up to 2 blocks.
       </p>
       ${blocksHtml}
       ${fe.activities?`<p class="error">${fe.activities}</p>`:""}
@@ -474,36 +474,37 @@ function renderRegister() {
     <div class="card">
       <div class="card-title">TACTWD Activities <span style="font-weight:400;color:#aaa;font-size:11px">Optional — select all that apply</span></div>
       <p style="font-size:13px;color:#666;margin-bottom:14px">I understand that I am required to check-in at the <strong>Appley Theatre</strong> prior to participating in any event activations. I plan to visit and/or participate in the following:</p>
-      <div class="checkbox-group">
+      <div class="checkbox-group" id="tactwd-group">
         ${[
           "Kohler Design Center Self Guided Tour | Open to the public  9:00a – 5:00p",
           "Studio Photo Shoot at The Beacon | Available  8:00a – 12:00p",
           "Kohler Archives Self Guided Tour at The Beacon | Available  8:00a – 12:00p",
-        ].map(opt => {
+        ].map((opt,i) => {
           const checked = tactwdActivities.includes(opt);
           const parts = opt.split(" | ");
           const label = `<strong>${esc(parts[0])}</strong>${parts[1] ? " | " + esc(parts[1]) : ""}`;
-          return `<label class="checkbox-opt ${checked?"chosen":""}" onclick="toggleTactwd('${esc(opt)}')">
-            <input type="checkbox" ${checked?"checked":""} readonly style="pointer-events:none" />
+          return `<div class="checkbox-opt ${checked?"chosen":""}" data-tactwd="${esc(opt)}">
+            <input type="checkbox" ${checked?"checked":""} style="pointer-events:none;accent-color:#1a4fa8;width:16px;height:16px;min-width:16px;margin-top:2px" />
             <span>${label}</span>
-          </label>`;
+          </div>`;
         }).join("")}
       </div>
     </div>
 
-    <!-- GET INVOLVED (optional) -->
+    <!-- GET INVOLVED (optional multi-select) -->
     <div class="card">
-      <div class="card-title">Want to be closer to the action? <span style="font-weight:400;color:#aaa;font-size:11px">Optional</span></div>
-      <div class="radio-group">
-        <div class="radio-opt ${getInvolved==="PACK Member"?"chosen":""}" onclick="getInvolved='PACK Member';render()">
-          <input type="radio" name="getInvolved" ${getInvolved==="PACK Member"?"checked":""} readonly />
-          <label>I'd like to become a PACK Member!</label>
-        </div>
-        <div class="radio-opt ${getInvolved==="Volunteer"?"chosen":""}" onclick="getInvolved='Volunteer';render()">
-          <input type="radio" name="getInvolved" ${getInvolved==="Volunteer"?"checked":""} readonly />
-          <label>I'd like to volunteer to help with TACTWD!</label>
-        </div>
-        ${getInvolved ? `<button class="btn-link" onclick="getInvolved='';render()" style="margin-top:4px">Clear selection</button>` : ""}
+      <div class="card-title">Want to be closer to the action? <span style="font-weight:400;color:#aaa;font-size:11px">Optional — select all that apply</span></div>
+      <div class="checkbox-group" id="getinvolved-group">
+        ${[
+          "I'd like to become a PACK Member!",
+          "I'd like to volunteer to help with TACTWD!",
+        ].map(opt => {
+          const checked = getInvolved.includes(opt);
+          return `<div class="checkbox-opt ${checked?"chosen":""}" data-getinvolved="${esc(opt)}">
+            <input type="checkbox" ${checked?"checked":""} style="pointer-events:none;accent-color:#1a4fa8;width:16px;height:16px;min-width:16px;margin-top:2px" />
+            <span>${esc(opt)}</span>
+          </div>`;
+        }).join("")}
       </div>
     </div>
 
@@ -700,7 +701,41 @@ function toggleTactwd(opt) {
   const idx = tactwdActivities.indexOf(opt);
   if (idx === -1) tactwdActivities.push(opt);
   else tactwdActivities.splice(idx, 1);
-  render();
+}
+
+function attachGetInvolvedListeners() {
+  const group = document.getElementById("getinvolved-group");
+  if (!group) return;
+  group.addEventListener("click", function(e) {
+    const div = e.target.closest("[data-getinvolved]");
+    if (!div) return;
+    const opt = div.getAttribute("data-getinvolved");
+    const idx = getInvolved.indexOf(opt);
+    if (idx === -1) getInvolved.push(opt);
+    else getInvolved.splice(idx, 1);
+    const cb = div.querySelector("input[type=checkbox]");
+    const isNowChecked = getInvolved.includes(opt);
+    div.classList.toggle("chosen", isNowChecked);
+    if (cb) cb.checked = isNowChecked;
+  });
+}
+
+function attachTactwdListeners() {
+  const group = document.getElementById("tactwd-group");
+  if (!group) return;
+  group.addEventListener("click", function(e) {
+    const div = e.target.closest("[data-tactwd]");
+    if (!div) return;
+    const opt = div.getAttribute("data-tactwd");
+    const idx = tactwdActivities.indexOf(opt);
+    if (idx === -1) tactwdActivities.push(opt);
+    else tactwdActivities.splice(idx, 1);
+    // Update UI without full re-render
+    const cb = div.querySelector("input[type=checkbox]");
+    const isNowChecked = tactwdActivities.includes(opt);
+    div.classList.toggle("chosen", isNowChecked);
+    if (cb) cb.checked = isNowChecked;
+  });
 }
 
 function selectActivity(bid, aid) { selectedActivities[bid]=aid; formErrors.activities=null; render(); }
@@ -725,7 +760,7 @@ async function handleSubmit() {
   if (children.some(c=>!c.trim()))       formErrors.children = "Please fill in all children's names.";
   if (childAges.some((a,i)=>children[i].trim()&&!a.trim())) formErrors.childAges = "Please fill in all children's ages.";
   const selBlocks = Object.keys(selectedActivities).filter(k=>selectedActivities[k]);
-  if (selBlocks.length!==2)  formErrors.activities = "Please select exactly 2 time blocks.";
+  if (selBlocks.length > 2)   formErrors.activities = "Please select no more than 2 time blocks.";
   if (!consentAccepted)       formErrors.consent = "You must accept the terms to register.";
   if (Object.keys(formErrors).length) { render(); window.scrollTo(0,0); return; }
 
@@ -763,7 +798,7 @@ async function handleSubmit() {
 function resetForm() {
   associateName=""; email=""; clockNumber=""; title=""; workLocation=""; manager="";
   children=[""]; childAges=[""]; selectedActivities={}; formErrors={};
-  submittedReg=null; getInvolved=""; consentAccepted=false; tactwdActivities=[];
+  submittedReg=null; getInvolved=[]; consentAccepted=false; tactwdActivities=[];
   view="home"; render(); loadLiveData();
 }
 
