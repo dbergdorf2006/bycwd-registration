@@ -84,6 +84,12 @@
     .radio-opt:hover { border-color: #1a4fa8; background: #f8f9ff; }
     .radio-opt.chosen { border: 2px solid #1a4fa8; background: #f0f4ff; }
     .radio-opt input[type="radio"] { accent-color: #1a4fa8; width: 16px; height: 16px; }
+
+    .checkbox-group { display: grid; gap: 8px; }
+    .checkbox-opt { display: flex; align-items: flex-start; gap: 10px; padding: 10px 14px; border: 1px solid #ddd; border-radius: 8px; cursor: pointer; transition: all .12s; font-size: 14px; font-weight: 400; margin: 0; }
+    .checkbox-opt:hover { border-color: #1a4fa8; background: #f8f9ff; }
+    .checkbox-opt.chosen { border: 2px solid #1a4fa8; background: #f0f4ff; }
+    .checkbox-opt input[type="checkbox"] { accent-color: #1a4fa8; width: 16px; height: 16px; min-width: 16px; margin-top: 2px; pointer-events: none; }
     .radio-opt label { font-size: 14px; cursor: pointer; margin: 0; font-weight: 400; }
 
     /* Summary */
@@ -148,10 +154,6 @@ const TIME_BLOCKS = [
     { id:"A1", name:"Science Experiments Lab", capacity:20 },
     { id:"A2", name:"Coding for Kids", capacity:15 },
     { id:"A3", name:"Art & Crafts Studio", capacity:25 },
-    { id:"A4", name:"Pottery", capacity:23 },
-    { id:"A5", name:"Product Innovation Tour", capacity:20 },
-    { id:"A6", name:"Toilet Lab", capacity:22 },
-    
   ]},
   { id:"B", label:"Block B", time:"9:45 AM – 11:15 AM", activities:[
     { id:"B1", name:"Engineering Challenge", capacity:18 },
@@ -221,6 +223,7 @@ async function submitRegistration(reg) {
       "Session 1":                reg.sessions[0] || "",
       "Session 2":                reg.sessions[1] || "",
       "Get Involved":             reg.getInvolved || "No response",
+      "TACTWD Activities":        reg.tactwdActivities.length ? reg.tactwdActivities.join("; ") : "None selected",
       "Consent Accepted":         reg.consentAccepted ? "Yes" : "No",
       "Submitted At":             new Date().toISOString(),
     }
@@ -256,6 +259,7 @@ let associateName = "", email = "", clockNumber = "", title = "", workLocation =
 let children = [""], childAges = [""];
 let selectedActivities = {}, formErrors = {}, submitting = false, submittedReg = null;
 let getInvolved = "", consentAccepted = false;
+let tactwdActivities = [];  // multi-select optional activities
 
 // Admin state
 let adminAuthed = false, adminTab = "capacity";
@@ -466,17 +470,24 @@ function renderRegister() {
 
     ${summary}
 
-    <!-- TACTWD INFO -->
+    <!-- TACTWD ACTIVITIES (optional multi-select) -->
     <div class="card">
-      <div class="card-title">Event Check-In &amp; Activities</div>
-      <div class="info-box">
-        <p>I understand that I am required to check-in for Take A Child To Work Day at the <strong>Appley Theatre</strong> prior to participating in any event activations. I plan to visit and/or participate in the following TACTWD Activities:</p>
-        <ul style="margin-top:10px">
-          <li><strong>Registration Check-In</strong> | Appley Theatre &nbsp;7:30a – 4:00p</li>
-          <li><strong>Kohler Design Center Self Guided Tour</strong> | Open to the public &nbsp;9:00a – 5:00p</li>
-          <li><strong>Studio Photo Shoot at The Beacon</strong> | Available &nbsp;8:00a – 12:00p</li>
-          <li><strong>Kohler Archives Self Guided Tour at The Beacon</strong> | Available &nbsp;8:00a – 12:00p</li>
-        </ul>
+      <div class="card-title">TACTWD Activities <span style="font-weight:400;color:#aaa;font-size:11px">Optional — select all that apply</span></div>
+      <p style="font-size:13px;color:#666;margin-bottom:14px">I understand that I am required to check-in at the <strong>Appley Theatre</strong> prior to participating in any event activations. I plan to visit and/or participate in the following:</p>
+      <div class="checkbox-group">
+        ${[
+          "Kohler Design Center Self Guided Tour | Open to the public  9:00a – 5:00p",
+          "Studio Photo Shoot at The Beacon | Available  8:00a – 12:00p",
+          "Kohler Archives Self Guided Tour at The Beacon | Available  8:00a – 12:00p",
+        ].map(opt => {
+          const checked = tactwdActivities.includes(opt);
+          const parts = opt.split(" | ");
+          const label = `<strong>${esc(parts[0])}</strong>${parts[1] ? " | " + esc(parts[1]) : ""}`;
+          return `<label class="checkbox-opt ${checked?"chosen":""}" onclick="toggleTactwd('${esc(opt)}')">
+            <input type="checkbox" ${checked?"checked":""} readonly style="pointer-events:none" />
+            <span>${label}</span>
+          </label>`;
+        }).join("")}
       </div>
     </div>
 
@@ -646,6 +657,7 @@ function renderSetupTab() {
           ["Session 1","Single line text"],
           ["Session 2","Single line text"],
           ["Get Involved","Single line text"],
+          ["TACTWD Activities","Long text"],
           ["Consent Accepted","Single line text"],
           ["Submitted At","Single line text"],
         ].map(([n,t])=>`<tr>
@@ -682,6 +694,13 @@ function addChild() {
       if (inputs.length) inputs[inputs.length-1].focus();
     }
   }
+}
+
+function toggleTactwd(opt) {
+  const idx = tactwdActivities.indexOf(opt);
+  if (idx === -1) tactwdActivities.push(opt);
+  else tactwdActivities.splice(idx, 1);
+  render();
 }
 
 function selectActivity(bid, aid) { selectedActivities[bid]=aid; formErrors.activities=null; render(); }
@@ -726,7 +745,7 @@ async function handleSubmit() {
     location: workLocation.trim(), manager: manager.trim(),
     children: children.map(c=>c.trim()).filter(Boolean),
     childAges: childAges.slice(0, children.filter(c=>c.trim()).length),
-    sessions, getInvolved, consentAccepted,
+    sessions, getInvolved, consentAccepted, tactwdActivities: [...tactwdActivities],
   };
 
   submitting=true; render();
@@ -744,7 +763,7 @@ async function handleSubmit() {
 function resetForm() {
   associateName=""; email=""; clockNumber=""; title=""; workLocation=""; manager="";
   children=[""]; childAges=[""]; selectedActivities={}; formErrors={};
-  submittedReg=null; getInvolved=""; consentAccepted=false;
+  submittedReg=null; getInvolved=""; consentAccepted=false; tactwdActivities=[];
   view="home"; render(); loadLiveData();
 }
 
@@ -772,7 +791,7 @@ async function refreshData() { await loadLiveData(); }
 function exportCSV() {
   const cols = ["Associate Name","Email Address","Clock Number","Title","Location",
     "Direct Manager / Supervisor","Children","Number of Children","Total Headcount",
-    "Session 1","Session 2","Get Involved","Consent Accepted","Submitted At"];
+    "Session 1","Session 2","Get Involved","TACTWD Activities","Consent Accepted","Submitted At"];
   const rows = [cols];
   liveRecords.forEach(r => {
     const f = r.fields;
