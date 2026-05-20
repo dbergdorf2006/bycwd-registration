@@ -324,7 +324,7 @@ function buildChildRows() {
       <div class="two-col">
         <div class="field" style="margin-bottom:0">
           <label>Name <span class="req">*</span></label>
-          <input class="child-input" type="text" placeholder="Child's full name" value="${esc(c)}" data-index="${i}" data-field="name" />
+          <input class="child-input" type="text" placeholder="Child's full name" value="${esc(c)}" data-index="${i}" data-field="name" oninput="updateHeadcountDisplay()" />
         </div>
         <div class="field" style="margin-bottom:0">
           <label>Age <span class="req">*</span></label>
@@ -367,7 +367,11 @@ function attachChildListeners() {
 // ─── REGISTER ───────────────────────────────────────────────────────────────
 function renderRegister() {
   const selBlocks = Object.keys(selectedActivities).filter(k=>selectedActivities[k]);
-  const validKids = children.filter(c=>c.trim());
+  // Read live child names from DOM if available, else fall back to state
+  const liveChildren = [];
+  document.querySelectorAll(".child-input").forEach(inp => liveChildren.push(inp.value));
+  const activeChildren = (liveChildren.length ? liveChildren : children).filter(c=>c.trim());
+  const validKids = activeChildren;
   const headcount = 1 + validKids.length;
 
   const fe = formErrors;
@@ -414,36 +418,36 @@ function renderRegister() {
       <div class="two-col">
         <div class="field">
           <label>Associate's Name <span class="req">*</span></label>
-          <input type="text" placeholder="Jane Smith" value="${esc(associateName)}" oninput="associateName=this.value;formErrors.associateName=null" class="${fe.associateName?"has-error":""}" />
+          <input type="text" id="field-name" placeholder="Jane Smith" value="${esc(associateName)}" oninput="associateName=this.value;formErrors.associateName=null" class="${fe.associateName?"has-error":""}" />
           ${fe.associateName?`<p class="error">${fe.associateName}</p>`:""}
         </div>
         <div class="field">
           <label>Email Address <span class="req">*</span></label>
-          <input type="email" placeholder="jane.smith@kohler.com" value="${esc(email)}" oninput="email=this.value;formErrors.email=null" class="${fe.email?"has-error":""}" />
+          <input type="email" id="field-email" placeholder="jane.smith@kohler.com" value="${esc(email)}" oninput="email=this.value;formErrors.email=null" class="${fe.email?"has-error":""}" />
           ${fe.email?`<p class="error">${fe.email}</p>`:""}
         </div>
       </div>
       <div class="two-col">
         <div class="field">
           <label>Clock Number <span class="req">*</span></label>
-          <input type="text" placeholder="e.g. KO12345" value="${esc(clockNumber)}" oninput="clockNumber=this.value;formErrors.clockNumber=null" class="${fe.clockNumber?"has-error":""}" />
+          <input type="text" id="field-clock" placeholder="e.g. KO12345" value="${esc(clockNumber)}" oninput="clockNumber=this.value;formErrors.clockNumber=null" class="${fe.clockNumber?"has-error":""}" />
           ${fe.clockNumber?`<p class="error">${fe.clockNumber}</p>`:""}
         </div>
         <div class="field">
           <label>Title <span class="req">*</span></label>
-          <input type="text" placeholder="e.g. Senior Engineer" value="${esc(title)}" oninput="title=this.value;formErrors.title=null" class="${fe.title?"has-error":""}" />
+          <input type="text" id="field-title" placeholder="e.g. Senior Engineer" value="${esc(title)}" oninput="title=this.value;formErrors.title=null" class="${fe.title?"has-error":""}" />
           ${fe.title?`<p class="error">${fe.title}</p>`:""}
         </div>
       </div>
       <div class="two-col">
         <div class="field">
           <label>Location <span class="req">*</span></label>
-          <input type="text" placeholder="e.g. Building 83" value="${esc(workLocation)}" oninput="workLocation=this.value;formErrors.location=null" class="${fe.location?"has-error":""}" />
+          <input type="text" id="field-loc" placeholder="e.g. Building 83" value="${esc(workLocation)}" oninput="workLocation=this.value;formErrors.location=null" class="${fe.location?"has-error":""}" />
           ${fe.location?`<p class="error">${fe.location}</p>`:""}
         </div>
         <div class="field">
           <label>Direct Manager / Supervisor <span class="req">*</span></label>
-          <input type="text" placeholder="Manager's name" value="${esc(manager)}" oninput="manager=this.value;formErrors.manager=null" class="${fe.manager?"has-error":""}" />
+          <input type="text" id="field-mgr" placeholder="Manager's name" value="${esc(manager)}" oninput="manager=this.value;formErrors.manager=null" class="${fe.manager?"has-error":""}" />
           ${fe.manager?`<p class="error">${fe.manager}</p>`:""}
         </div>
       </div>
@@ -461,7 +465,7 @@ function renderRegister() {
     <!-- ACTIVITY SESSIONS -->
     <div class="card">
       <div class="card-title">Activity Sessions — Optional, up to 2 blocks</div>
-      <p style="font-size:13px;color:#888;margin-bottom:14px">
+      <p id="headcount-display" style="font-size:13px;color:#888;margin-bottom:14px">
         You + ${validKids.length} child${validKids.length!==1?"ren":""} = <strong>${headcount} spot${headcount!==1?"s":""}</strong> reserved per activity. Optionally select one activity per block, up to 2 blocks.
       </p>
       ${blocksHtml}
@@ -741,13 +745,35 @@ function attachTactwdListeners() {
 function selectActivity(bid, aid) { selectedActivities[bid]=aid; formErrors.activities=null; render(); }
 function clearBlock(bid) { delete selectedActivities[bid]; render(); }
 
-async function handleSubmit() {
+function updateHeadcountDisplay() {
+  const el = document.getElementById("headcount-display");
+  if (!el) return;
+  const names = [];
+  document.querySelectorAll(".child-input").forEach(inp => names.push(inp.value));
+  const count = names.filter(c=>c.trim()).length;
+  const hc = 1 + count;
+  el.innerHTML = `You + ${count} child${count!==1?"ren":""} = <strong>${hc} spot${hc!==1?"s":""}</strong> reserved per activity. Optionally select one activity per block, up to 2 blocks.`;
+}
+
+function syncAllFields() {
+  // Sync associate text fields from DOM (prevents re-render from wiping typed values)
+  const f = (id) => document.getElementById(id);
+  if (f("field-name"))    associateName = f("field-name").value;
+  if (f("field-email"))   email         = f("field-email").value;
+  if (f("field-clock"))   clockNumber   = f("field-clock").value;
+  if (f("field-title"))   title         = f("field-title").value;
+  if (f("field-loc"))     workLocation  = f("field-loc").value;
+  if (f("field-mgr"))     manager       = f("field-mgr").value;
   // Sync child inputs
   const childContainer = document.getElementById("child-rows");
   if (childContainer) {
     childContainer.querySelectorAll(".child-input").forEach(inp => { children[+inp.dataset.index] = inp.value; });
     childContainer.querySelectorAll(".child-age-input").forEach(inp => { childAges[+inp.dataset.index] = inp.value; });
   }
+}
+
+async function handleSubmit() {
+  syncAllFields();
 
   formErrors = {};
   if (!associateName.trim())  formErrors.associateName = "Please enter your name.";
