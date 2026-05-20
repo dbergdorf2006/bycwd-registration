@@ -267,6 +267,8 @@ let adminAuthed = false, adminTab = "capacity";
 // ─── RENDER ─────────────────────────────────────────────────────────────────
 function render() {
   try {
+    // Always sync form field state from DOM before re-rendering register view
+    if (view==="register") syncAllFields();
     const app = document.getElementById("app");
     if      (view==="home")     app.innerHTML = renderHome();
     else if (view==="register") { app.innerHTML = renderRegister(); attachChildListeners(); attachTactwdListeners(); attachGetInvolvedListeners(); }
@@ -306,7 +308,7 @@ function renderHome() {
       <div style="font-size:48px;margin-bottom:12px">🌟</div>
       <h2 style="font-size:26px;font-weight:700;margin-bottom:8px">Take A Child To Work Day</h2>
       <p style="color:#666;font-size:15px;margin-bottom:6px">Register yourself and your children for this year's event.</p>
-      <p style="color:#666;font-size:15px;margin-bottom:24px">Choose <strong>2 activity sessions</strong> from 5 time blocks.</p>
+      <p style="color:#666;font-size:15px;margin-bottom:24px">Choose <strong>up to 2 activity sessions</strong> from 5 time blocks.</p>
       <button class="btn btn-primary" style="font-size:16px;padding:12px 36px" onclick="goRegister()">Register Now</button>
     </div>
     ${status}
@@ -551,7 +553,8 @@ function renderConfirm() {
       <p><strong>Clock #:</strong> ${esc(r.clockNumber)} &nbsp;|&nbsp; <strong>Title:</strong> ${esc(r.title)}</p>
       <p><strong>Location:</strong> ${esc(r.location)} &nbsp;|&nbsp; <strong>Manager:</strong> ${esc(r.manager)}</p>
       <p style="margin-top:8px"><strong>Children:</strong> ${childrenStr||"—"}</p>
-      ${r.getInvolved?`<p><strong>Get Involved:</strong> ${esc(r.getInvolved)}</p>`:""}
+      ${r.tactwdActivities&&r.tactwdActivities.length?`<p style="margin-top:6px"><strong>TACTWD Activities:</strong></p><ul style="font-size:14px;color:#444;padding-left:18px;margin-top:4px">${r.tactwdActivities.map(a=>`<li>${esc(a.split(" | ")[0])}</li>`).join("")}</ul>`:""}
+      ${r.getInvolved&&r.getInvolved.length?`<p><strong>Get Involved:</strong> ${esc(r.getInvolved.join(", "))}</p>`:""}
       <p style="margin-top:10px"><strong>Sessions booked:</strong></p>
       <div style="margin-top:6px">${pills}</div>
     </div>
