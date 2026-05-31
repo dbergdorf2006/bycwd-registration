@@ -427,7 +427,7 @@ function renderRegister() {
       <div class="card-title">Associate Information</div>
       <div class="two-col">
         <div class="field">
-          <label>Associate's Name <span class="req">*</span></label>
+          <label>Associate's First & Last Name <span class="req">*</span></label>
           <input type="text" id="field-name" placeholder="Jane Smith" value="${esc(associateName)}" oninput="associateName=this.value;formErrors.associateName=null" class="${fe.associateName?"has-error":""}" />
           ${fe.associateName?`<p class="error">${fe.associateName}</p>`:""}
         </div>
