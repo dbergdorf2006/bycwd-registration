@@ -128,6 +128,8 @@
     .admin-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
     .admin-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 
+    textarea { width: 100%; padding: 10px 14px; border: 1px solid #ddd; border-radius: 8px; font-size: 15px; background: #fafafa; outline: none; transition: border-color .15s, box-shadow .15s; resize: vertical; font-family: inherit; }
+    textarea:focus { border-color: #1a4fa8; background: #fff; box-shadow: 0 0 0 3px rgba(26,79,168,.12); }
     code { background: #f0eee8; border-radius: 4px; padding: 1px 6px; font-family: monospace; font-size: 13px; color: #333; }
     .env-box { background: #1e1e2e; border-radius: 10px; padding: 16px 20px; margin: 12px 0; font-family: monospace; font-size: 13px; color: #cdd6f4; line-height: 2; }
     .env-box span { color: #89b4fa; }
@@ -224,6 +226,7 @@ async function submitRegistration(reg) {
       "Session 2":                reg.sessions[1] || "",
       "Get Involved":             reg.getInvolved.length ? reg.getInvolved.join("; ") : "No response",
       "TACTWD Activities":        reg.tactwdActivities.length ? reg.tactwdActivities.join("; ") : "None selected",
+      "Waitlist Request":          reg.waitlistNote || "",
       "Consent Accepted":         reg.consentAccepted ? "Yes" : "No",
       "Submitted At":             new Date().toISOString(),
     }
@@ -258,7 +261,7 @@ let liveRecords = [], enrollment = {}, loadingData = false, loadError = null;
 let associateName = "", email = "", clockNumber = "", title = "", workLocation = "", manager = "";
 let children = [""], childAges = [""];
 let selectedActivities = {}, formErrors = {}, submitting = false, submittedReg = null;
-let getInvolved = [], consentAccepted = false;
+let getInvolved = [], consentAccepted = false, waitlistNote = "";
 let tactwdActivities = [];  // multi-select optional activities
 
 // Admin state
@@ -330,7 +333,10 @@ function buildChildRows() {
         </div>
         <div class="field" style="margin-bottom:0">
           <label>Age <span class="req">*</span></label>
-          <input class="child-age-input" type="text" placeholder="e.g. 8" value="${esc(childAges[i]||"")}" data-index="${i}" data-field="age" />
+          <select class="child-age-input" data-index="${i}" data-field="age" style="width:100%;padding:10px 14px;border:1px solid #ddd;border-radius:8px;font-size:15px;background:#fafafa;outline:none;appearance:auto;cursor:pointer">
+            <option value="">Select age</option>
+            ${["5","6","7","8","9","10","11","12","13","14","15","16","17","18+"].map(a=>`<option value="${a}" ${childAges[i]===a?"selected":""}>${a}</option>`).join("")}
+          </select>
         </div>
       </div>
     </div>`).join("");
@@ -342,11 +348,13 @@ function attachChildListeners() {
   const container = old.cloneNode(true);
   old.parentNode.replaceChild(container, old);
 
-  container.addEventListener("input", e => {
+  function handleChildFieldChange(e) {
     const idx = +e.target.dataset.index;
     if (e.target.classList.contains("child-input"))     { children[idx] = e.target.value; formErrors.children = null; }
     if (e.target.classList.contains("child-age-input")) { childAges[idx] = e.target.value; formErrors.childAges = null; }
-  });
+  }
+  container.addEventListener("input", handleChildFieldChange);
+  container.addEventListener("change", handleChildFieldChange);
 
   container.addEventListener("click", e => {
     const btn = e.target.closest("[data-remove]");
@@ -476,6 +484,15 @@ function renderRegister() {
 
     ${summary}
 
+    <!-- WAITLIST -->
+    <div class="card">
+      <div class="card-title">Waitlist Request <span style="font-weight:400;color:#aaa;font-size:11px">Optional</span></div>
+      <div class="field" style="margin-bottom:0">
+        <label>If you would like to be added to a full activity, please list the activity and block in the field below</label>
+        <textarea id="field-waitlist" rows="3" placeholder="e.g. Block A - Science Experiments Lab" oninput="waitlistNote=this.value">${esc(waitlistNote)}</textarea>
+      </div>
+    </div>
+
     <!-- TACTWD ACTIVITIES (optional multi-select) -->
     <div class="card">
       <div class="card-title">TACTWD Activities <span style="font-weight:400;color:#aaa;font-size:11px">Optional — select all that apply</span></div>
@@ -533,6 +550,13 @@ function renderRegister() {
       </div>
     </div>
 
+    <div class="card" style="background:#fff9f0;border:1px solid #f0d8a0">
+      <div class="card-title" style="color:#7a5c00">Final Review</div>
+      <p style="font-size:14px;color:#5a4010;line-height:1.7;margin-bottom:10px">Please review your registration carefully prior to clicking the "Complete Registration" button below, as changes cannot be made once it is submitted. If you need to request a change, or cancel your registration, please contact <a href="mailto:karlee.shaw@kohler.com" style="color:#1a4fa8">karlee.shaw@kohler.com</a>.</p>
+      <p style="font-size:14px;color:#5a4010;line-height:1.7;margin-bottom:10px">If you require reasonable accommodations due to a disability, please reach out to <a href="mailto:PACK@kohler.com" style="color:#1a4fa8">PACK@kohler.com</a>.</p>
+      <p style="font-size:14px;color:#5a4010;line-height:1.7">A "Know Before You Go" email will be shared in advance of the event with important details.</p>
+    </div>
+
     ${fe.submit?`<p class="error" style="margin-bottom:10px">${fe.submit}</p>`:""}
     <button class="btn btn-primary btn-full" onclick="handleSubmit()" ${submitting?"disabled":""}>${btnLabel}</button>`;
 }
@@ -544,7 +568,8 @@ function renderConfirm() {
   const childrenStr = r.children.map((c,i)=>`${esc(c)}${r.childAges[i]?" (age "+esc(r.childAges[i])+")":""}`).join(", ");
   return `<div style="text-align:center;padding:2rem 0">
     <div style="font-size:52px;margin-bottom:16px">🎉</div>
-    <h2 style="font-size:24px;font-weight:700;margin-bottom:8px">You're registered!</h2>
+    <h2 style="font-size:24px;font-weight:700;margin-bottom:10px">You're registered!</h2>
+    <p style="color:#d94040;font-size:18px;font-weight:600;margin-bottom:12px">📸 Screenshot this page as your confirmation.</p>
     <p style="color:#666;font-size:15px;margin-bottom:4px">See you at Take A Child To Work Day,</p>
     <p style="font-size:18px;font-weight:600;margin-bottom:20px">${esc(r.associateName)}</p>
     <div class="confirm-card">
@@ -555,10 +580,11 @@ function renderConfirm() {
       <p style="margin-top:8px"><strong>Children:</strong> ${childrenStr||"—"}</p>
       ${r.tactwdActivities&&r.tactwdActivities.length?`<p style="margin-top:6px"><strong>TACTWD Activities:</strong></p><ul style="font-size:14px;color:#444;padding-left:18px;margin-top:4px">${r.tactwdActivities.map(a=>`<li>${esc(a.split(" | ")[0])}</li>`).join("")}</ul>`:""}
       ${r.getInvolved&&r.getInvolved.length?`<p><strong>Get Involved:</strong> ${esc(r.getInvolved.join(", "))}</p>`:""}
+      ${r.waitlistNote?`<p style="margin-top:6px"><strong>Waitlist request:</strong> ${esc(r.waitlistNote)}</p>`:""}
       <p style="margin-top:10px"><strong>Sessions booked:</strong></p>
       <div style="margin-top:6px">${pills}</div>
     </div>
-    <p style="font-size:13px;color:#aaa;margin-bottom:20px">Screenshot this page as your confirmation.</p>
+
     <button class="btn btn-outline" onclick="resetForm()">Register another associate</button>
   </div>`;
 }
@@ -666,6 +692,7 @@ function renderSetupTab() {
           ["Session 2","Single line text"],
           ["Get Involved","Single line text"],
           ["TACTWD Activities","Long text"],
+          ["Waitlist Request","Long text"],
           ["Consent Accepted","Single line text"],
           ["Submitted At","Single line text"],
         ].map(([n,t])=>`<tr>
@@ -767,6 +794,7 @@ function syncAllFields() {
   if (f("field-title"))   title         = f("field-title").value;
   if (f("field-loc"))     workLocation  = f("field-loc").value;
   if (f("field-mgr"))     manager       = f("field-mgr").value;
+  if (f("field-waitlist")) waitlistNote = f("field-waitlist").value;
   // Sync child inputs
   const childContainer = document.getElementById("child-rows");
   if (childContainer) {
@@ -809,7 +837,7 @@ async function handleSubmit() {
     location: workLocation.trim(), manager: manager.trim(),
     children: children.map(c=>c.trim()).filter(Boolean),
     childAges: childAges.slice(0, children.filter(c=>c.trim()).length),
-    sessions, getInvolved, consentAccepted, tactwdActivities: [...tactwdActivities],
+    sessions, getInvolved, consentAccepted, tactwdActivities: [...tactwdActivities], waitlistNote,
   };
 
   submitting=true; render();
@@ -827,7 +855,7 @@ async function handleSubmit() {
 function resetForm() {
   associateName=""; email=""; clockNumber=""; title=""; workLocation=""; manager="";
   children=[""]; childAges=[""]; selectedActivities={}; formErrors={};
-  submittedReg=null; getInvolved=[]; consentAccepted=false; tactwdActivities=[];
+  submittedReg=null; getInvolved=[]; consentAccepted=false; tactwdActivities=[]; waitlistNote="";
   view="home"; render(); loadLiveData();
 }
 
@@ -855,7 +883,7 @@ async function refreshData() { await loadLiveData(); }
 function exportCSV() {
   const cols = ["Associate Name","Email Address","Clock Number","Title","Location",
     "Direct Manager / Supervisor","Children","Number of Children","Total Headcount",
-    "Session 1","Session 2","Get Involved","TACTWD Activities","Consent Accepted","Submitted At"];
+    "Session 1","Session 2","Get Involved","TACTWD Activities","Waitlist Request","Consent Accepted","Submitted At"];
   const rows = [cols];
   liveRecords.forEach(r => {
     const f = r.fields;
