@@ -502,12 +502,14 @@ function renderRegister() {
     <!-- TACTWD ACTIVITIES (optional multi-select) -->
     <div class="card">
       <div class="card-title">TACTWD Activities <span style="font-weight:400;color:#aaa;font-size:11px">Optional — select all that apply</span></div>
-      <p style="font-size:13px;color:#666;margin-bottom:14px">I understand that I am required to check-in at the <strong>Appley Theatre</strong> prior to participating in any event activations. I plan to visit and/or participate in the following:</p>
+      <p style="font-size:13px;color:#666;margin-bottom:14px">I understand that I am required to check-in at the <strong>Kohler Design Center</strong> prior to participating in any event activations. I plan to visit and/or participate in the following:</p>
       <div class="checkbox-group" id="tactwd-group">
         ${[
           "Kohler Design Center Self Guided Tour | Open to the public  9:00a – 5:00p",
           "Studio Photo Shoot at The Beacon | Available  8:00a – 12:00p",
-          "Kohler Archives Self Guided Tour at The Beacon | Available  8:00a – 12:00p",
+          "Make Your Own Badge at The Beacon | Available 8:00a - 12:00p",
+          "Junior Executive Brand Builders Meeting at The Beacon | Available 8:00a - 12:00p",
+          "Healthy Hearts Play Station at BOLD Cycle | Exact Times TBD",
         ].map((opt,i) => {
           const checked = tactwdActivities.includes(opt);
           const parts = opt.split(" | ");
@@ -546,7 +548,7 @@ function renderRegister() {
           <li>You understand that all children accompanying you despite their age, will be required to stay with you during the duration of your participation in Take A Child To Work Day.</li>
           <li>You agree to discuss your participation in this event with your supervisor and confirm their support.</li>
           <li>You understand that you must stay with the event volunteers and activation staff at all times. Kohler associates are not permitted to visit locations outside of the approved event activations.</li>
-          <li>You acknowledge that you are required to check-in for this event at the Appley Theatre prior to participating in any event activations.</li>
+          <li>You acknowledge that you are required to check-in for this event at the Kohler Design Center prior to participating in any event activations.</li>
         </ul>
         <label class="consent-check">
           <input type="checkbox" id="consent-cb" ${consentAccepted?"checked":""} onchange="consentAccepted=this.checked;formErrors.consent=null" />
