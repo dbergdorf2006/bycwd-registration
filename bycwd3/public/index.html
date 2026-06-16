@@ -835,8 +835,37 @@ async function handleSubmit() {
 
   const headcount = 1 + children.filter(c=>c.trim()).length;
   const actIds = Object.values(selectedActivities).filter(Boolean);
-  const capFail = actIds.find(aid => { const a=getActivity(aid); return a&&(enrollment[aid]||0)+headcount>a.capacity; });
-  if (capFail) { formErrors.activities="One or more activities is now full. Please choose different sessions."; render(); return; }
+
+  // Live capacity check — re-fetch fresh counts from Airtable right before saving
+  if (actIds.length > 0) {
+    submitting=true; render();
+    try {
+      const freshRecords = await fetchAllRegistrations();
+      const freshEnrollment = computeEnrollment(freshRecords);
+      // Update local enrollment with latest data
+      liveRecords = freshRecords;
+      enrollment = freshEnrollment;
+      const capFail = actIds.find(aid => {
+        const a = getActivity(aid);
+        return a && (freshEnrollment[aid]||0) + headcount > a.capacity;
+      });
+      if (capFail) {
+        const a = getActivity(capFail);
+        const b = getBlockForActivity(capFail);
+        const remaining = a.capacity - (freshEnrollment[capFail]||0);
+        formErrors.activities = remaining <= 0
+          ? `Sorry — ${a.name} (${b?.label}) just filled up while you were registering. Please select a different activity.`
+          : `Sorry — ${a.name} (${b?.label}) only has ${remaining} spot${remaining!==1?"s":""} left, but your group needs ${headcount}. Please select a different activity.`;
+        submitting=false; render(); return;
+      }
+    } catch(err) {
+      // If live check fails, fall back to cached enrollment but warn
+      console.warn("Live capacity check failed, using cached data:", err.message);
+      const capFail = actIds.find(aid => { const a=getActivity(aid); return a&&(enrollment[aid]||0)+headcount>a.capacity; });
+      if (capFail) { formErrors.activities="One or more activities is now full. Please choose different sessions."; submitting=false; render(); return; }
+    }
+    submitting=false;
+  }
 
   const sessions = actIds.map(aid => {
     const a=getActivity(aid), b=getBlockForActivity(aid);
